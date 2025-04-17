@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>MyTextValidationRule1</fullName>
+    <active>true</active>
+    <description>description</description>
+    <errorConditionFormula>LEN(MyText__c)&lt;3</errorConditionFormula>
+    <errorDisplayField>MyText__c</errorDisplayField>
+    <errorMessage>Too short text</errorMessage>
+</ValidationRule>

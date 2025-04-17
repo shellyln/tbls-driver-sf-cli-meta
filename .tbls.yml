@@ -1,0 +1,48 @@
+dsn: sf-cli-meta:.
+
+docPath: doc/schema
+
+format:
+  # Adjust the column width of Markdown format table
+  # Default is false
+  adjust: false
+  # Sort the order of table list and columns
+  # Default is false
+  sort: true
+  # Display sequential numbers in table rows
+  # Default is false
+  number: false
+  # The comments for each table in the Tables section of the index page will display the text up to the first double newline (first paragraph).
+  # Default is false
+  showOnlyFirstParagraph: false
+  # Hide table columns without values
+  # Default is false
+  hideColumnsWithoutValues: false
+  # It can be boolean or array
+  # hideColumnsWithoutValues: ["Parents", "Children"]
+
+er:
+  # Skip generation of ER diagram
+  # Default is false
+  skip: false
+  # ER diagram image format (`png`, `jpg`, `svg`, `mermaid`)
+  # Default is `svg`
+  format: mermaid
+  # Add table/column comment to ER diagram
+  # Default is false
+  comment: false
+  # Hide relation definition from ER diagram
+  # Default is false
+  hideDef: false
+  # Show column settings in ER diagram. If this section is not set, all columns will be displayed (default).
+  showColumnTypes:
+    # Show related columns
+    related: true
+    # Show primary key columns
+    primary: true
+  # Distance between tables that display relations in the ER
+  # Default is 1
+  distance: 2
+  # ER diagram (png/jpg) font (font name, font file, font path or keyword)
+  # Default is "" (system default)
+  font:

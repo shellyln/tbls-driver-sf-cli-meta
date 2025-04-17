@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>MyNumber__c</fullName>
+    <defaultValue>0</defaultValue>
+    <description>description</description>
+    <externalId>true</externalId>
+    <inlineHelpText>help text</inlineHelpText>
+    <label>MyNumber</label>
+    <precision>18</precision>
+    <required>true</required>
+    <scale>4</scale>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>true</unique>
+</CustomField>
