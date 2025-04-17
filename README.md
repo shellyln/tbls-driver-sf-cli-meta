@@ -3,7 +3,36 @@
 [tbls](https://github.com/k1LoW/tbls?tab=readme-ov-file#external-database-driver) external database driver for Salesforce CLI's metadata.  
 Driver for reading "Source Format" metadata of Salesforce CLI [sf command](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) on local files.
 
+[![Test](https://github.com/shellyln/tbls-driver-sf-cli-meta/actions/workflows/test.yml/badge.svg)](https://github.com/shellyln/tbls-driver-sf-cli-meta/actions/workflows/test.yml)
+[![release](https://img.shields.io/github/v/release/shellyln/tbls-driver-sf-cli-meta)](https://github.com/shellyln/tbls-driver-sf-cli-meta/releases)
+[![Go version](https://img.shields.io/github/go-mod/go-version/shellyln/tbls-driver-sf-cli-meta)](https://github.com/shellyln/tbls-driver-sf-cli-meta)
+
 ## 🪄 Install
+
+### Go install (recommended):
+#### 🪟 Windows prerequirements:
+```bash
+choco install golang
+# or
+# scoop bucket add main
+# scoop install main/go
+
+go install github.com/k1LoW/tbls@latest
+```
+* https://community.chocolatey.org/
+* https://scoop.sh/
+
+#### 🍎 Mac prerequirements:
+```bash
+brew install go
+go install github.com/k1LoW/tbls@latest
+```
+* https://brew.sh/
+
+#### ⚡️ Install:
+```bash
+go install github.com/shellyln/tbls-driver-sf-cli-meta@latest
+```
 
 ### Manually:
 #### 🪟 Windows prerequirements:
@@ -39,31 +68,6 @@ cd tbls-driver-cli-meta
 # Build it and copy the binary to the $GOPATH/bin, which is probably in the PATH.
 # tbls external driver executable SHOULD be in the PATH.
 make && make install
-```
-
-### Go install:
-#### 🪟 Windows prerequirements:
-```bash
-choco install golang
-# or
-# scoop bucket add main
-# scoop install main/go
-
-go install github.com/k1LoW/tbls@latest
-```
-* https://community.chocolatey.org/
-* https://scoop.sh/
-
-#### 🍎 Mac prerequirements:
-```bash
-brew install go
-go install github.com/k1LoW/tbls@latest
-```
-* https://brew.sh/
-
-#### ⚡️ Install:
-```bash
-go install github.com/shellyln/tbls-driver-sf-cli-meta@latest
 ```
 
 
