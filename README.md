@@ -63,7 +63,7 @@ go install github.com/k1LoW/tbls@latest
 
 #### ⚡️ Install:
 ```bash
-################
+go install github.com/shellyln/tbls-driver-sf-cli-meta@latest
 ```
 
 
