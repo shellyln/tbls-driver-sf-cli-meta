@@ -219,6 +219,12 @@ func readFieldsMeta(
 			fldMeta.Type = "_" // reqired
 		}
 
+		if (fldMeta.Type == "MasterDetail" || fldMeta.Type == "Lookup") &&
+			fldMeta.ReferenceTo == "" && len(fldMeta.FullName) > 2 && strings.HasSuffix(fldMeta.FullName, "Id") {
+
+			fldMeta.ReferenceTo = strings.TrimSuffix(fldMeta.FullName, "Id")
+		}
+
 		objMeta := sobjMap[entityName]
 		objMeta.Fields[fld.Name()] = &fldMeta
 	}
@@ -350,4 +356,16 @@ func readApexTriggers(baseDir string) (map[string]*SfApexTrigger, error) {
 	}
 
 	return trigMap, nil
+}
+
+func removeMissingRelations(sobjMap map[string]*SfCustomObject) {
+	for _, sobjMeta := range sobjMap {
+		for _, fldMeta := range sobjMeta.Fields {
+			if fldMeta.Type == "MasterDetail" || fldMeta.Type == "Lookup" {
+				if _, ok := sobjMap[fldMeta.ReferenceTo]; !ok {
+					fldMeta.ReferenceTo = ""
+				}
+			}
+		}
+	}
 }

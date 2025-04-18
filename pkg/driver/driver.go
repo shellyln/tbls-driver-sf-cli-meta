@@ -34,6 +34,8 @@ func ReadSalseforceMeta(baseDir string) (SalesforceMeta, error) {
 		return retval, err
 	}
 
+	removeMissingRelations(retval.SObjects)
+
 	return retval, nil
 }
 
