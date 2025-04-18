@@ -215,6 +215,10 @@ func readFieldsMeta(
 			}
 		}
 
+		if fldMeta.Type == "" {
+			fldMeta.Type = "_" // reqired
+		}
+
 		objMeta := sobjMap[entityName]
 		objMeta.Fields[fld.Name()] = &fldMeta
 	}
