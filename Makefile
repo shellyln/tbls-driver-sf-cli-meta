@@ -115,6 +115,7 @@ clean:
 	-$(RM_F) $(BIN_SO)
 	-$(RM_F) $(BIN_WASM)
 	-$(RM_RF) doc$(DIRSEP)schema
+	-$(RM_F) schema.xlsx
 
 cleantest:
 	$(GOCLEAN) -testcache
@@ -177,6 +178,8 @@ tbls:
 	$(RM_RF) doc$(DIRSEP)schema
 	tbls doc
 
+xlsx:
+	tbls out -t xlsx -o schema.xlsx
 
 xbuild: export GOOS:=$(GOXOS)
 xbuild: export GOARCH:=$(GOXARCH)
