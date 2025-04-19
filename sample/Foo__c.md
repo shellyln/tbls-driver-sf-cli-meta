@@ -74,6 +74,9 @@ erDiagram
 "Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account2__c)
 (Account.SecondFooes)"
+"Contact" }o--|| "Account" : "Lookup
+(Contact.AccountId)
+(Account.)"
 "Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account__c)
 (Account.Fooes)"
@@ -88,6 +91,9 @@ erDiagram
 }
 "Account" {
   Id Id
+}
+"Contact" {
+  Lookup_Account_ AccountId FK
 }
 "Bar__c" {
   Id Id

@@ -6,44 +6,44 @@
 
 | Name | Type | Default | Nullable | Extra Definition | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | ---------------- | -------- | ------- | ------- |
-| AccountNumber |  |  | true |  |  |  |  |
+| AccountNumber | _ |  | true |  |  |  |  |
 | AccountSource | Picklist |  | true |  |  |  |  |
 | Active__c | Picklist |  | true | No; Yes |  |  | Active |
-| AnnualRevenue |  |  | true |  |  |  |  |
-| BillingAddress |  |  | true |  |  |  |  |
-| CleanStatus |  |  | true |  |  |  |  |
+| AnnualRevenue | _ |  | true |  |  |  |  |
+| BillingAddress | _ |  | true |  |  |  |  |
+| CleanStatus | _ |  | true |  |  |  |  |
 | CustomerPriority__c | Picklist |  | true | High; Low; Medium |  |  | Customer Priority |
 | DandbCompanyId | Lookup |  | true |  |  |  |  |
-| Description |  |  | true |  |  |  |  |
-| DunsNumber |  |  | true |  |  |  |  |
-| Fax |  |  | true |  |  |  |  |
-| Id | Id |  | false |  | [Foo__c](Foo__c.md) |  | Id |
+| Description | _ |  | true |  |  |  |  |
+| DunsNumber | _ |  | true |  |  |  |  |
+| Fax | _ |  | true |  |  |  |  |
+| Id | Id |  | false |  | [Contact](Contact.md) [Foo__c](Foo__c.md) |  | Id |
 | Industry | Picklist |  | true |  |  |  |  |
-| Jigsaw |  |  | true |  |  |  |  |
-| NaicsCode |  |  | true |  |  |  |  |
-| NaicsDesc |  |  | true |  |  |  |  |
+| Jigsaw | _ |  | true |  |  |  |  |
+| NaicsCode | _ |  | true |  |  |  |  |
+| NaicsDesc | _ |  | true |  |  |  |  |
 | Name | Name |  | false |  |  |  |  |
-| NumberOfEmployees |  |  | true |  |  |  |  |
+| NumberOfEmployees | _ |  | true |  |  |  |  |
 | NumberofLocations__c | Number(3, 0) |  | true |  |  |  | Number of Locations |
 | OwnerId | Lookup |  | true |  |  |  |  |
 | Ownership | Picklist |  | true |  |  |  |  |
 | ParentId | Hierarchy |  | true |  |  |  |  |
-| Phone |  |  | true |  |  |  |  |
+| Phone | _ |  | true |  |  |  |  |
 | Rating | Picklist |  | true |  |  |  |  |
 | SLAExpirationDate__c | Date |  | true |  |  |  | SLA Expiration Date |
 | SLASerialNumber__c | Text(10) |  | true |  |  |  | SLA Serial Number |
 | SLA__c | Picklist |  | true | Gold; Silver; Platinum; Bronze |  |  | SLA |
-| ShippingAddress |  |  | true |  |  |  |  |
-| Sic |  |  | true |  |  |  |  |
-| SicDesc |  |  | true |  |  |  |  |
-| Site |  |  | true |  |  |  |  |
-| TickerSymbol |  |  | true |  |  |  |  |
-| Tier |  |  | true |  |  |  |  |
-| Tradestyle |  |  | true |  |  |  |  |
+| ShippingAddress | _ |  | true |  |  |  |  |
+| Sic | _ |  | true |  |  |  |  |
+| SicDesc | _ |  | true |  |  |  |  |
+| Site | _ |  | true |  |  |  |  |
+| TickerSymbol | _ |  | true |  |  |  |  |
+| Tier | _ |  | true |  |  |  |  |
+| Tradestyle | _ |  | true |  |  |  |  |
 | Type | Picklist |  | true |  |  |  |  |
 | UpsellOpportunity__c | Picklist |  | true | Maybe; No; Yes |  |  | Upsell Opportunity |
-| Website |  |  | true |  |  |  |  |
-| YearStarted |  |  | true |  |  |  |  |
+| Website | _ |  | true |  |  |  |  |
+| YearStarted | _ |  | true |  |  |  |  |
 
 ## Constraints
 
@@ -63,6 +63,9 @@
 ```mermaid
 erDiagram
 
+"Contact" }o--|| "Account" : "Lookup
+(Contact.AccountId)
+(Account.)"
 "Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account__c)
 (Account.Fooes)"
@@ -75,6 +78,9 @@ erDiagram
 
 "Account" {
   Id Id
+}
+"Contact" {
+  Lookup_Account_ AccountId FK
 }
 "Foo__c" {
   Lookup_Account_ Account2__c FK
