@@ -7,6 +7,8 @@ Driver for reading "Source Format" metadata of Salesforce CLI [sf command](https
 [![release](https://img.shields.io/github/v/release/shellyln/tbls-driver-sf-cli-meta)](https://github.com/shellyln/tbls-driver-sf-cli-meta/releases)
 [![Go version](https://img.shields.io/github/go-mod/go-version/shellyln/tbls-driver-sf-cli-meta)](https://github.com/shellyln/tbls-driver-sf-cli-meta)
 
+<img src="https://raw.githubusercontent.com/shellyln/tbls-driver-sf-cli-meta/master/_assets/logo-tbls-driver-sf-cli-meta.svg" alt="logo" style="width:250px;" width="250">
+
 ## 🪄 Install
 
 ### Go install (recommended):
