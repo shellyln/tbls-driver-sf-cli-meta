@@ -155,16 +155,23 @@ type SfFlow struct {
 	} `xml:"start"`
 }
 
-type SfApexTrigger struct {
+type SfApexTriggerCode struct {
 	Name         string
 	TargetEntity string
 	Events       string
+	Status       string
+}
+
+type SfApexTriggerMeta struct {
+	XMLName    xml.Name `xml:"ApexTrigger"`
+	ApiVersion string   `xml:"apiVersion"`
+	Status     string   `xml:"status"`
 }
 
 type SalesforceMeta struct {
 	GlobalValueSets  map[string]*SfGlobalValueSet
 	RestrictionRules map[string]*SfRestrictionRule
 	Flows            map[string]*SfFlow
-	ApexTriggers     map[string]*SfApexTrigger
+	ApexTriggers     map[string]*SfApexTriggerCode
 	SObjects         map[string]*SfCustomObject
 }

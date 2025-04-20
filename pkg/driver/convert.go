@@ -195,9 +195,13 @@ func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
 			if flowMeta.Start.Object == objMeta.FullName && len(flowMeta.Start.RecordTriggerType) > 0 {
 				trigger := Trigger{
 					Name:    "flow." + flowMeta.Name,
-					Def:     flowMeta.Start.RecordTriggerType + ", " + flowMeta.Start.TriggerType,
+					Def:     "",
 					Comment: flowMeta.Label,
 				}
+				if flowMeta.Status != "Active" {
+					trigger.Def = "[Inactive] "
+				}
+				trigger.Def += flowMeta.Start.RecordTriggerType + ", " + flowMeta.Start.TriggerType
 				table.Triggers = append(table.Triggers, trigger)
 			}
 		}
@@ -206,9 +210,13 @@ func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
 			if trigMeta.TargetEntity == objMeta.FullName {
 				trigger := Trigger{
 					Name:    "trigger." + trigMeta.Name,
-					Def:     trigMeta.Events,
+					Def:     "",
 					Comment: "",
 				}
+				if trigMeta.Status != "Active" {
+					trigger.Def = "[Inactive] "
+				}
+				trigger.Def += trigMeta.Events
 				table.Triggers = append(table.Triggers, trigger)
 			}
 		}
@@ -217,15 +225,18 @@ func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
 			constraint := Constraint{
 				Name:              ruleMeta.FullName,
 				Type:              "ValidationRule",
-				Def:               ruleMeta.ErrorDisplayField + ": " + ruleMeta.ErrorConditionFormula,
+				Def:               "",
 				Table:             objMeta.FullName,
 				ReferencedTable:   "",
 				Columns:           nil,
 				ReferencedColumns: nil,
 				Comment:           ruleMeta.Description,
 			}
+			if !ruleMeta.Active {
+				constraint.Def = "[Inactive] "
+			}
 			if len(ruleMeta.ErrorDisplayField) > 0 {
-				constraint.Def = "[" + ruleMeta.ErrorDisplayField + "] "
+				constraint.Def += "[" + ruleMeta.ErrorDisplayField + "] "
 			}
 			constraint.Def += ruleMeta.ErrorConditionFormula
 			table.Constraints = append(table.Constraints, constraint)
@@ -236,13 +247,17 @@ func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
 				constraint := Constraint{
 					Name:              ruleMeta.MasterLabel,
 					Type:              ruleMeta.EnforcementType,
-					Def:               ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter,
+					Def:               "",
 					Table:             objMeta.FullName,
 					ReferencedTable:   "",
 					Columns:           nil,
 					ReferencedColumns: nil,
 					Comment:           ruleMeta.Description,
 				}
+				if !ruleMeta.Active {
+					constraint.Def = "[Inactive] "
+				}
+				constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
 				table.Constraints = append(table.Constraints, constraint)
 			}
 		}

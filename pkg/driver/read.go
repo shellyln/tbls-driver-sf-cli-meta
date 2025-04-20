@@ -304,13 +304,14 @@ func readObjectsMeta(baseDir string, vsMap map[string]*SfGlobalValueSet) (map[st
 	return sobjMap, nil
 }
 
-func readApexTriggers(baseDir string) (map[string]*SfApexTrigger, error) {
+func readApexTriggers(baseDir string) (map[string]*SfApexTriggerCode, error) {
 	re, err := regexp.Compile(`\btrigger\s+(\S+)\s+on\s+(\S+)\s*\(([^)]*)\)`)
 	if err != nil {
 		return nil, err
 	}
 
-	trigMap := make(map[string]*SfApexTrigger)
+	trigMap := make(map[string]*SfApexTriggerCode)
+	trigMetaMap := make(map[string]*SfApexTriggerMeta)
 
 	trigDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "triggers"))
 	if err != nil {
@@ -325,34 +326,53 @@ func readApexTriggers(baseDir string) (map[string]*SfApexTrigger, error) {
 		if trigger.IsDir() {
 			continue
 		}
-		if !strings.HasSuffix(trigger.Name(), ".trigger") {
-			continue
-		}
 
-		ftrig, err := os.Open(filepath.Join(trigDir, trigger.Name()))
-		if err != nil {
-			return nil, err
-		}
-		defer ftrig.Close()
+		if strings.HasSuffix(trigger.Name(), ".trigger") {
+			ftrig, err := os.Open(filepath.Join(trigDir, trigger.Name()))
+			if err != nil {
+				return nil, err
+			}
+			defer ftrig.Close()
 
-		bytes, err := io.ReadAll(ftrig)
-		if err != nil {
-			return nil, err
-		}
-		lines := string(bytes)
+			bytes, err := io.ReadAll(ftrig)
+			if err != nil {
+				return nil, err
+			}
+			lines := string(bytes)
 
-		result := re.FindAllStringSubmatch(lines, 1)
-		if result == nil {
-			continue
-		}
+			result := re.FindAllStringSubmatch(lines, 1)
+			if result == nil {
+				continue
+			}
 
-		trigMeta := SfApexTrigger{
-			Name:         result[0][1],
-			TargetEntity: result[0][2],
-			Events:       result[0][3],
-		}
+			trigCode := SfApexTriggerCode{
+				Name:         result[0][1],
+				TargetEntity: result[0][2],
+				Events:       result[0][3],
+				Status:       "Active",
+			}
+			trigMap[strings.TrimSuffix(trigger.Name(), ".trigger")] = &trigCode
+		} else if strings.HasSuffix(trigger.Name(), ".trigger-meta.xml") {
+			ftrig, err := os.Open(filepath.Join(trigDir, trigger.Name()))
+			if err != nil {
+				return nil, err
+			}
+			defer ftrig.Close()
 
-		trigMap[trigger.Name()] = &trigMeta
+			var trigMeta SfApexTriggerMeta
+			trigDec := xml.NewDecoder(ftrig)
+			err = trigDec.Decode(&trigMeta)
+			if err != nil {
+				return nil, err
+			}
+			trigMetaMap[strings.TrimSuffix(trigger.Name(), ".trigger-meta.xml")] = &trigMeta
+		}
+	}
+
+	for name, trigCode := range trigMap {
+		if trigMeta, ok := trigMetaMap[name]; ok {
+			trigCode.Status = trigMeta.Status
+		}
 	}
 
 	return trigMap, nil
