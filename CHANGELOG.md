@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.0.5
+* If the constraints are not active, display 'Inactive'.
+* Edit Makefile.
+* Update sample doc.
+* Update README.
+
 ## v0.0.4
 * Add test data.
 * Restore lost relationships in standard objects.
