@@ -110,6 +110,13 @@ tbls doc
 ```
 [Sample document](sample/README.md)
 
+
+## 📦 CI
+### On GitHub Actions:
+
+See [workflow setting](https://github.com/shellyln/tbls-driver-ci-test/blob/master/.github/workflows/test.yml).
+
+
 ## ⚖️ License
 
 MIT  
