@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.6
+* [FIX] Ignore FILE NOT FOUND error if Field, GlobalValueSet, RestrictionRule, ValidationRule, Flow, ApexTrigger directories are not exist.
+* Add CI section to README.
+
 ## v0.0.5
 * If the constraints are not active, display 'Inactive'.
 * Edit Makefile.
