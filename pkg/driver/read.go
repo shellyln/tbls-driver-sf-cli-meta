@@ -18,7 +18,11 @@ func readGlobalValueSetsMeta(baseDir string) (map[string]*SfGlobalValueSet, erro
 	}
 	valueSets, err := os.ReadDir(valueSetDir)
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return vsMap, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	for _, vs := range valueSets {
@@ -58,7 +62,11 @@ func readRestrictionRulesMeta(baseDir string) (map[string]*SfRestrictionRule, er
 	}
 	rules, err := os.ReadDir(rulesDir)
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return ruleMap, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	for _, rule := range rules {
@@ -97,7 +105,11 @@ func readFlowsMeta(baseDir string) (map[string]*SfFlow, error) {
 	}
 	flows, err := os.ReadDir(flowsDir)
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return flowMap, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	for _, flow := range flows {
@@ -132,12 +144,16 @@ func readValidationRulesMeta(entitiesDir string, entityName string) (map[string]
 	ruleMap := make(map[string]*SfValidationRule)
 
 	rulesDir := filepath.Join(entitiesDir, entityName, "validationRules")
-	ruless, err := os.ReadDir(rulesDir)
+	rules, err := os.ReadDir(rulesDir)
 	if err != nil {
-		return nil, nil
+		if os.IsNotExist(err) {
+			return ruleMap, nil
+		} else {
+			return nil, err
+		}
 	}
 
-	for _, rule := range ruless {
+	for _, rule := range rules {
 		if rule.IsDir() {
 			continue
 		}
@@ -174,7 +190,11 @@ func readFieldsMeta(
 
 	fields, err := os.ReadDir(fieldsDir)
 	if err != nil {
-		return err
+		if os.IsNotExist(err) {
+			return nil
+		} else {
+			return err
+		}
 	}
 
 	for _, fld := range fields {
@@ -319,7 +339,11 @@ func readApexTriggers(baseDir string) (map[string]*SfApexTriggerCode, error) {
 	}
 	triggers, err := os.ReadDir(trigDir)
 	if err != nil {
-		return nil, err
+		if os.IsNotExist(err) {
+			return trigMap, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	for _, trigger := range triggers {
