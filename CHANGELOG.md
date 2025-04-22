@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.7
+* Improve GlobalPickValue output.
+* Edit templates and configurations for sample output.
+* Update sample output.
+
 ## v0.0.6
 * [FIX] Ignore FILE NOT FOUND error if Field, GlobalValueSet, RestrictionRule, ValidationRule, Flow, ApexTrigger directories are not exist.
 * Add CI section to README.
