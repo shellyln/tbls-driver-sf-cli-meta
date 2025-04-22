@@ -59,10 +59,7 @@ func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
 
 			if len(fldMeta.ValueSet.ValueSetDefinition.Value) > 0 {
 				if len(fldMeta.ValueSet.ValueSetName) > 0 {
-					if len(column.ExtraDef) > 0 {
-						column.ExtraDef += "; "
-					}
-					column.ExtraDef += "[Global:" + fldMeta.ValueSet.ValueSetName + "]"
+					column.Type += "(" + fldMeta.ValueSet.ValueSetName + ")"
 				}
 				for _, vsMeta := range fldMeta.ValueSet.ValueSetDefinition.Value {
 					if len(column.ExtraDef) > 0 {
@@ -263,6 +260,26 @@ func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
 		}
 
 		schema.Tables = append(schema.Tables, table)
+	}
+
+	for _, gvs := range sfMeta.GlobalValueSets {
+		enum := Enum{
+			Name:   gvs.Name,
+			Values: make([]string, 0),
+		}
+		for _, vsMeta := range gvs.CustomValue {
+			value := ""
+			if vsMeta.Default {
+				value += "[Default] "
+			}
+			if vsMeta.FullName != vsMeta.Label {
+				value += "{" + vsMeta.Label + ", " + vsMeta.FullName + "}"
+			} else {
+				value += vsMeta.FullName
+			}
+			enum.Values = append(enum.Values, value)
+		}
+		schema.Enums = append(schema.Enums, enum)
 	}
 
 	return &schema, nil
