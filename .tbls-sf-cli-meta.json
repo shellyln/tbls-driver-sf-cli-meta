@@ -1,2 +1,9 @@
 {
+    "escapedCharacters": "$[",
+    "targets": [
+        {
+            "pattern": "",
+            "escapedCharacters": "$["
+        }
+    ]
 }

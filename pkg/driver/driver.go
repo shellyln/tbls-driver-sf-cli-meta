@@ -55,6 +55,11 @@ func Run() error {
 		return err
 	}
 
+	err = PostProcess(baseDir, schema)
+	if err != nil {
+		return err
+	}
+
 	bytes, err := json.Marshal(schema)
 	if err != nil {
 		return err
