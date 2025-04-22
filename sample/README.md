@@ -11,7 +11,7 @@
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
 | [Account](Account.md) | 38 |  | Standard object |
-| [Bar__c](Bar__c.md) | 2 | Bar | Custom object |
+| [Bar__c](Bar__c.md) | 3 | Bar | Custom object |
 | [Contact](Contact.md) | 34 |  | Standard object |
 | [Foo__c](Foo__c.md) | 27 | Foo | Custom object |
 | [MyCustomMeta__mdt](MyCustomMeta__mdt.md) | 2 | MyCustomMeta | Custom metadata |

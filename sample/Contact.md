@@ -70,23 +70,12 @@ erDiagram
 "Contact" }o--|| "Account" : "Lookup
 (Contact.AccountId)
 (Account.)"
-"Foo__c" }o--|| "Account" : "Lookup
-(Foo__c.Account2__c)
-(Account.SecondFooes)"
-"Foo__c" }o--|| "Account" : "Lookup
-(Foo__c.Account__c)
-(Account.Fooes)"
 
 "Contact" {
   Lookup_Account_ AccountId FK
 }
 "Account" {
   Id Id
-}
-"Foo__c" {
-  Lookup_Account_ Account2__c FK
-  Lookup_Account_ Account__c FK
-  MasterDetail_Bar__c_ Bar__c FK
 }
 ```
 

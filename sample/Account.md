@@ -80,9 +80,6 @@ erDiagram
 "Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account__c)
 (Account.Fooes)"
-"Foo__c" }o--|| "Bar__c" : "MasterDetail
-(Foo__c.Bar__c)
-(Bar__c.Fooes)"
 
 "Account" {
   Id Id
@@ -94,9 +91,6 @@ erDiagram
   Lookup_Account_ Account2__c FK
   Lookup_Account_ Account__c FK
   MasterDetail_Bar__c_ Bar__c FK
-}
-"Bar__c" {
-  Id Id
 }
 ```
 

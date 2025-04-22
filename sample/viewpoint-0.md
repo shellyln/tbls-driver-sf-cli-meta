@@ -14,7 +14,7 @@ Custom objects
 
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
-| [Bar__c](Bar__c.md) | 2 | Bar | Custom object |
+| [Bar__c](Bar__c.md) | 3 | Bar | Custom object |
 | [Foo__c](Foo__c.md) | 27 | Foo | Custom object |
 
 ### Standard
@@ -87,6 +87,7 @@ erDiagram
 "Bar__c" {
   Id Id
   Name_Text_ Name
+  Record_Type RecordTypeId
 }
 "Contact" {
   Lookup_Account_ AccountId

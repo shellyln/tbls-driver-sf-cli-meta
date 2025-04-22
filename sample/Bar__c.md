@@ -8,10 +8,11 @@ Bar
 
 ## Columns
 
-| Name | Type | Default | Nullable | Children | Parents | Comment |
-| ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| Id | Id |  | false | [Foo__c](Foo__c.md) |  | Id |
-| Name | Name(Text) |  | false |  |  | Bar Name |
+| Name | Type | Default | Nullable | Extra Definition | Children | Parents | Comment |
+| ---- | ---- | ------- | -------- | ---------------- | -------- | ------- | ------- |
+| Id | Id |  | false |  | [Foo__c](Foo__c.md) |  | Id |
+| Name | Name(Text) |  | false |  |  |  | Bar Name |
+| RecordTypeId | Record Type |  | false | Bar1; {Bar 2, Bar2} |  |  | Record Type |
 
 ## Viewpoints
 
@@ -40,12 +41,6 @@ erDiagram
 "Foo__c" }o--|| "Bar__c" : "MasterDetail
 (Foo__c.Bar__c)
 (Bar__c.Fooes)"
-"Foo__c" }o--|| "Account" : "Lookup
-(Foo__c.Account2__c)
-(Account.SecondFooes)"
-"Foo__c" }o--|| "Account" : "Lookup
-(Foo__c.Account__c)
-(Account.Fooes)"
 
 "Bar__c" {
   Id Id
@@ -54,9 +49,6 @@ erDiagram
   Lookup_Account_ Account2__c FK
   Lookup_Account_ Account__c FK
   MasterDetail_Bar__c_ Bar__c FK
-}
-"Account" {
-  Id Id
 }
 ```
 
