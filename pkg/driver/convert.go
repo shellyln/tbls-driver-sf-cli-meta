@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -115,6 +116,26 @@ func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
 
 			if len(fldMeta.DefaultValue) > 0 {
 				column.Default = fldMeta.DefaultValue
+			}
+
+			if fldMeta.FullName == "RecordTypeId" {
+				recTypes := make([]*SfRecordType, 0)
+				for _, recTypeMeta := range objMeta.RecordTypes {
+					recTypes = append(recTypes, recTypeMeta)
+				}
+				sort.Slice(recTypes, func(i, j int) bool {
+					return strings.Compare(recTypes[i].FullName, recTypes[j].FullName) < 0
+				})
+				for _, recTypeMeta := range recTypes {
+					if len(column.ExtraDef) > 0 {
+						column.ExtraDef += "; "
+					}
+					if recTypeMeta.Label != recTypeMeta.FullName {
+						column.ExtraDef += "{" + recTypeMeta.Label + ", " + recTypeMeta.FullName + "}"
+					} else {
+						column.ExtraDef += recTypeMeta.FullName
+					}
+				}
 			}
 
 			table.Columns = append(table.Columns, column)

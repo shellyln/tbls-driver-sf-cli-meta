@@ -159,6 +159,7 @@
         <trackHistory>false</trackHistory>
         <type>Text</type>
     </nameField>
+    <recordTypeTrackHistory>false</recordTypeTrackHistory>
     <searchLayouts></searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>

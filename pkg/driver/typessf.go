@@ -4,6 +4,7 @@ import "encoding/xml"
 
 type SfCustomObject struct {
 	Fields          map[string]*SfCustomField
+	RecordTypes     map[string]*SfRecordType
 	ValidationRules map[string]*SfValidationRule
 	XMLName         xml.Name `xml:"CustomObject"`
 
@@ -24,6 +25,9 @@ type SfCustomObject struct {
 	EnableSharing           bool   `xml:"enableSharing"`
 	EnableStreamingApi      bool   `xml:"enableStreamingApi"`
 	ExternalSharingModel    string `xml:"externalSharingModel"`
+	RecordTypeTrackHistory  bool   `xml:"recordTypeTrackHistory"`
+	SharingModel            string `xml:"sharingModel"`
+	Visibility              string `xml:"visibility"`
 
 	NameField struct {
 		DisplayFormat string `xml:"displayFormat"`
@@ -37,6 +41,13 @@ type SfCustomObject struct {
 		FormFactor string `xml:"formFactor"`
 		Type       string `xml:"type"`
 	} `xml:"actionOverrides"`
+}
+
+type SfRecordType struct {
+	XMLName     xml.Name `xml:"RecordType"`
+	FullName    string   `xml:"fullName"`
+	Description string   `xml:"description"`
+	Label       string   `xml:"label"`
 }
 
 type SfCustomField struct {

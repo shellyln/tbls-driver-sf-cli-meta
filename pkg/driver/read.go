@@ -140,6 +140,46 @@ func readFlowsMeta(baseDir string) (map[string]*SfFlow, error) {
 	return flowMap, nil
 }
 
+func readRecordTypesMeta(entitiesDir string, entityName string) (map[string]*SfRecordType, error) {
+	recTypeMap := make(map[string]*SfRecordType)
+
+	recTypesDir := filepath.Join(entitiesDir, entityName, "recordTypes")
+	recTypes, err := os.ReadDir(recTypesDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return recTypeMap, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	for _, recType := range recTypes {
+		if recType.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(recType.Name(), ".recordType-meta.xml") {
+			continue
+		}
+
+		frecType, err := os.Open(filepath.Join(recTypesDir, recType.Name()))
+		if err != nil {
+			return nil, err
+		}
+		defer frecType.Close()
+
+		var recTypeMeta SfRecordType
+		recTypeDec := xml.NewDecoder(frecType)
+		err = recTypeDec.Decode(&recTypeMeta)
+		if err != nil {
+			return nil, err
+		}
+
+		recTypeMap[recType.Name()] = &recTypeMeta
+	}
+
+	return recTypeMap, nil
+}
+
 func readValidationRulesMeta(entitiesDir string, entityName string) (map[string]*SfValidationRule, error) {
 	ruleMap := make(map[string]*SfValidationRule)
 
@@ -307,6 +347,23 @@ func readObjectsMeta(baseDir string, vsMap map[string]*SfGlobalValueSet) (map[st
 				TrackHistory:  objMeta.NameField.TrackHistory,
 			}
 			objMeta.Fields[fldMeta.FullName] = &fldMeta
+		}
+
+		recTypeMap, err := readRecordTypesMeta(entitiesDir, ent.Name())
+		if err != nil {
+			return nil, err
+		}
+		objMeta.RecordTypes = recTypeMap
+
+		if len(recTypeMap) > 0 {
+			recIdFldMeta := SfCustomField{
+				Type:       "Record Type",
+				FullName:   "RecordTypeId",
+				Label:      "Record Type",
+				Required:   true,
+				ExternalId: false,
+			}
+			objMeta.Fields[recIdFldMeta.FullName] = &recIdFldMeta
 		}
 
 		ruleMap, err := readValidationRulesMeta(entitiesDir, ent.Name())
