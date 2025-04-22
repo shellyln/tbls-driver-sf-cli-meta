@@ -24,7 +24,7 @@ Foo
 | MyEncryptedText__c | EncryptedText(175) |  | false | all, asterisk |  |  | MyEncryptedText; description |
 | MyFormula__c | Formula(Checkbox, BlankAsZero) |  | true | 1=2 |  |  | MyFormula; description text |
 | MyGeolocation__c | Location |  | false | DisplayLocationInDecimal |  |  | MyGeolocation; description |
-| MyGlobalPicklist__c | Picklist |  | false | [Global:MyGlobalPickValue]; [Default] {Value H, H}; {Value I, I}; {Value J, J}; {Value K, K} |  |  | MyGlobalPicklist; description |
+| MyGlobalPicklist__c | Picklist(MyGlobalPickValue) |  | false | [Default] {Value H, H}; {Value I, I}; {Value J, J}; {Value K, K} |  |  | MyGlobalPicklist; description |
 | MyLongTextArea__c | LongTextArea(32768) | TEXT(UNIXTIMESTAMP(NOW())) | true |  |  |  | MyLongTextArea; description |
 | MyMultiPicklist__c | MultiselectPicklist | "Z" | false | [Default] {Value X, X}; {Value Y, Y}; {Value Z, Z} |  |  | MyMultiPicklist; description |
 | MyNumber__c | Number(18, 4) | 0 | false |  |  |  | MyNumber; description |

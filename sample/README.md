@@ -17,6 +17,12 @@
 | [MyCustomMeta__mdt](MyCustomMeta__mdt.md) | 2 | MyCustomMeta | Custom metadata |
 | [MyCustomSetting__c](MyCustomSetting__c.md) | 2 | MyCustomSetting | Custom setting |
 
+## Enums
+
+| Name | Values |
+| ---- | ------- |
+| MyGlobalPickValue | [Default] {Value H, H}, {Value I, I}, {Value J, J}, {Value K, K} |
+
 ## Relations
 
 ```mermaid
@@ -25,15 +31,15 @@ erDiagram
 "Contact" }o--|| "Account" : "Lookup
 (Contact.AccountId)
 (Account.)"
+"Foo__c" }o--|| "Bar__c" : "MasterDetail
+(Foo__c.Bar__c)
+(Bar__c.Fooes)"
 "Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account2__c)
 (Account.SecondFooes)"
 "Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account__c)
 (Account.Fooes)"
-"Foo__c" }o--|| "Bar__c" : "MasterDetail
-(Foo__c.Bar__c)
-(Bar__c.Fooes)"
 
 "Account" {
   Id Id
