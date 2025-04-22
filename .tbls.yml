@@ -2,6 +2,29 @@ dsn: sf-cli-meta:.
 
 docPath: doc/schema
 
+viewpoints:
+  -
+    name: Foobar
+    desc: Foo and bar.
+    tables:
+      - Foo__c
+      - Bar__c
+      - Account
+      - Contact
+    groups:
+      -
+        name: Custom
+        desc: Custom objects
+        tables:
+          - Foo__c
+          - Bar__c
+      -
+        name: Standard
+        desc: Standard objects
+        tables:
+          - Account
+          - Contact
+
 format:
   # Adjust the column width of Markdown format table
   # Default is false
@@ -20,6 +43,12 @@ format:
   hideColumnsWithoutValues: false
   # It can be boolean or array
   # hideColumnsWithoutValues: ["Parents", "Children"]
+
+templates:
+  md:
+    index: 'templates/index.md.tmpl'
+    table: 'templates/table.md.tmpl'
+    viewpoint: 'templates/viewpoint.md.tmpl'
 
 er:
   # Skip generation of ER diagram
