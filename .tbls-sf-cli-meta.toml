@@ -8,15 +8,15 @@
 # The `include` and `exclude` keys are applied in that order.
 # The wildcard `*` can be used to match multiple characters.
 
-include = [
-  '*__c',
+#include = [
+#  '*__c',
 #  '*__mdt',
-  'Account',
+#  'Account',
 #  'Contact',
-]
-exclude = [
-  'Contact',
-]
+#]
+#exclude = [
+#  'Contact',
+#]
 
 
 # -------------------------------------------------------------
@@ -32,14 +32,19 @@ exclude = [
 [[replacements]]
 def = ''
 prop = ''
-char = '$['
+char = '$'
 
 [[replacements]]
 def = ''
 prop = 'extra_def'
-char = '$['
+char = '$[~'
 
 [[replacements]]
 def = 'tables'
 prop = ''
 char = '$['
+
+[[replacements]]
+def = 'tables'
+prop = 'comment'
+char = '$[*'
