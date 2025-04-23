@@ -9,6 +9,40 @@ import (
 	"strings"
 )
 
+func ReadSalseforceMeta(baseDir string) (SalesforceMeta, error) {
+	var retval SalesforceMeta
+	var err error
+
+	retval.GlobalValueSets, err = readGlobalValueSetsMeta(baseDir)
+	if err != nil {
+		return retval, err
+	}
+
+	retval.RestrictionRules, err = readRestrictionRulesMeta(baseDir)
+	if err != nil {
+		return retval, err
+	}
+
+	retval.Flows, err = readFlowsMeta(baseDir)
+	if err != nil {
+		return retval, err
+	}
+
+	retval.ApexTriggers, err = readApexTriggers(baseDir)
+	if err != nil {
+		return retval, err
+	}
+
+	retval.SObjects, err = readObjectsMeta(baseDir, retval.GlobalValueSets)
+	if err != nil {
+		return retval, err
+	}
+
+	removeMissingRelations(retval.SObjects)
+
+	return retval, nil
+}
+
 func readGlobalValueSetsMeta(baseDir string) (map[string]*SfGlobalValueSet, error) {
 	vsMap := make(map[string]*SfGlobalValueSet)
 
@@ -138,6 +172,173 @@ func readFlowsMeta(baseDir string) (map[string]*SfFlow, error) {
 	}
 
 	return flowMap, nil
+}
+
+func readApexTriggers(baseDir string) (map[string]*SfApexTriggerCode, error) {
+	re, err := regexp.Compile(`\btrigger\s+(\S+)\s+on\s+(\S+)\s*\(([^)]*)\)`)
+	if err != nil {
+		return nil, err
+	}
+
+	trigMap := make(map[string]*SfApexTriggerCode)
+	trigMetaMap := make(map[string]*SfApexTriggerMeta)
+
+	trigDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "triggers"))
+	if err != nil {
+		return nil, err
+	}
+	triggers, err := os.ReadDir(trigDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return trigMap, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	for _, trigger := range triggers {
+		if trigger.IsDir() {
+			continue
+		}
+
+		if strings.HasSuffix(trigger.Name(), ".trigger") {
+			ftrig, err := os.Open(filepath.Join(trigDir, trigger.Name()))
+			if err != nil {
+				return nil, err
+			}
+			defer ftrig.Close()
+
+			bytes, err := io.ReadAll(ftrig)
+			if err != nil {
+				return nil, err
+			}
+			lines := string(bytes)
+
+			result := re.FindAllStringSubmatch(lines, 1)
+			if result == nil {
+				continue
+			}
+
+			trigCode := SfApexTriggerCode{
+				Name:         result[0][1],
+				TargetEntity: result[0][2],
+				Events:       result[0][3],
+				Status:       "Active",
+			}
+			trigMap[strings.TrimSuffix(trigger.Name(), ".trigger")] = &trigCode
+		} else if strings.HasSuffix(trigger.Name(), ".trigger-meta.xml") {
+			ftrig, err := os.Open(filepath.Join(trigDir, trigger.Name()))
+			if err != nil {
+				return nil, err
+			}
+			defer ftrig.Close()
+
+			var trigMeta SfApexTriggerMeta
+			trigDec := xml.NewDecoder(ftrig)
+			err = trigDec.Decode(&trigMeta)
+			if err != nil {
+				return nil, err
+			}
+			trigMetaMap[strings.TrimSuffix(trigger.Name(), ".trigger-meta.xml")] = &trigMeta
+		}
+	}
+
+	for name, trigCode := range trigMap {
+		if trigMeta, ok := trigMetaMap[name]; ok {
+			trigCode.Status = trigMeta.Status
+		}
+	}
+
+	return trigMap, nil
+}
+
+func readObjectsMeta(baseDir string, vsMap map[string]*SfGlobalValueSet) (map[string]*SfCustomObject, error) {
+	sobjMap := make(map[string]*SfCustomObject)
+
+	entitiesDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "objects"))
+	if err != nil {
+		return nil, err
+	}
+	entities, err := os.ReadDir(entitiesDir)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ent := range entities {
+		if !ent.IsDir() {
+			continue
+		}
+
+		fobj, err := os.Open(filepath.Join(entitiesDir, ent.Name(), ent.Name()+".object-meta.xml"))
+		if err != nil {
+			return nil, err
+		}
+		defer fobj.Close()
+
+		var objMeta SfCustomObject
+		objDec := xml.NewDecoder(fobj)
+		err = objDec.Decode(&objMeta)
+		if err != nil {
+			return nil, err
+		}
+
+		objMeta.FullName = ent.Name()
+		objMeta.Fields = make(map[string]*SfCustomField)
+		sobjMap[ent.Name()] = &objMeta
+
+		idFldMeta := SfCustomField{
+			Type:       "Id",
+			FullName:   "Id",
+			Label:      "Id",
+			Required:   true,
+			ExternalId: true,
+		}
+		objMeta.Fields[idFldMeta.FullName] = &idFldMeta
+
+		if len(objMeta.NameField.Type) > 0 {
+			// Custom objects
+			fldMeta := SfCustomField{
+				Type:          "Name(" + objMeta.NameField.Type + ")",
+				FullName:      "Name",
+				Label:         objMeta.NameField.Label,
+				Required:      true,
+				ExternalId:    true,
+				DisplayFormat: objMeta.NameField.DisplayFormat,
+				TrackHistory:  objMeta.NameField.TrackHistory,
+			}
+			objMeta.Fields[fldMeta.FullName] = &fldMeta
+		}
+
+		recTypeMap, err := readRecordTypesMeta(entitiesDir, ent.Name())
+		if err != nil {
+			return nil, err
+		}
+		objMeta.RecordTypes = recTypeMap
+
+		if len(recTypeMap) > 0 {
+			recIdFldMeta := SfCustomField{
+				Type:       "Record Type",
+				FullName:   "RecordTypeId",
+				Label:      "Record Type",
+				Required:   true,
+				ExternalId: false,
+			}
+			objMeta.Fields[recIdFldMeta.FullName] = &recIdFldMeta
+		}
+
+		ruleMap, err := readValidationRulesMeta(entitiesDir, ent.Name())
+		if err != nil {
+			return nil, err
+		}
+		objMeta.ValidationRules = ruleMap
+
+		err = readFieldsMeta(entitiesDir, ent.Name(), sobjMap, vsMap)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return sobjMap, nil
 }
 
 func readRecordTypesMeta(entitiesDir string, entityName string) (map[string]*SfRecordType, error) {
@@ -290,173 +491,6 @@ func readFieldsMeta(
 	}
 
 	return nil
-}
-
-func readObjectsMeta(baseDir string, vsMap map[string]*SfGlobalValueSet) (map[string]*SfCustomObject, error) {
-	sobjMap := make(map[string]*SfCustomObject)
-
-	entitiesDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "objects"))
-	if err != nil {
-		return nil, err
-	}
-	entities, err := os.ReadDir(entitiesDir)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, ent := range entities {
-		if !ent.IsDir() {
-			continue
-		}
-
-		fobj, err := os.Open(filepath.Join(entitiesDir, ent.Name(), ent.Name()+".object-meta.xml"))
-		if err != nil {
-			return nil, err
-		}
-		defer fobj.Close()
-
-		var objMeta SfCustomObject
-		objDec := xml.NewDecoder(fobj)
-		err = objDec.Decode(&objMeta)
-		if err != nil {
-			return nil, err
-		}
-
-		objMeta.FullName = ent.Name()
-		objMeta.Fields = make(map[string]*SfCustomField)
-		sobjMap[ent.Name()] = &objMeta
-
-		idFldMeta := SfCustomField{
-			Type:       "Id",
-			FullName:   "Id",
-			Label:      "Id",
-			Required:   true,
-			ExternalId: true,
-		}
-		objMeta.Fields[idFldMeta.FullName] = &idFldMeta
-
-		if len(objMeta.NameField.Type) > 0 {
-			// Custom objects
-			fldMeta := SfCustomField{
-				Type:          "Name(" + objMeta.NameField.Type + ")",
-				FullName:      "Name",
-				Label:         objMeta.NameField.Label,
-				Required:      true,
-				ExternalId:    true,
-				DisplayFormat: objMeta.NameField.DisplayFormat,
-				TrackHistory:  objMeta.NameField.TrackHistory,
-			}
-			objMeta.Fields[fldMeta.FullName] = &fldMeta
-		}
-
-		recTypeMap, err := readRecordTypesMeta(entitiesDir, ent.Name())
-		if err != nil {
-			return nil, err
-		}
-		objMeta.RecordTypes = recTypeMap
-
-		if len(recTypeMap) > 0 {
-			recIdFldMeta := SfCustomField{
-				Type:       "Record Type",
-				FullName:   "RecordTypeId",
-				Label:      "Record Type",
-				Required:   true,
-				ExternalId: false,
-			}
-			objMeta.Fields[recIdFldMeta.FullName] = &recIdFldMeta
-		}
-
-		ruleMap, err := readValidationRulesMeta(entitiesDir, ent.Name())
-		if err != nil {
-			return nil, err
-		}
-		objMeta.ValidationRules = ruleMap
-
-		err = readFieldsMeta(entitiesDir, ent.Name(), sobjMap, vsMap)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return sobjMap, nil
-}
-
-func readApexTriggers(baseDir string) (map[string]*SfApexTriggerCode, error) {
-	re, err := regexp.Compile(`\btrigger\s+(\S+)\s+on\s+(\S+)\s*\(([^)]*)\)`)
-	if err != nil {
-		return nil, err
-	}
-
-	trigMap := make(map[string]*SfApexTriggerCode)
-	trigMetaMap := make(map[string]*SfApexTriggerMeta)
-
-	trigDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "triggers"))
-	if err != nil {
-		return nil, err
-	}
-	triggers, err := os.ReadDir(trigDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return trigMap, nil
-		} else {
-			return nil, err
-		}
-	}
-
-	for _, trigger := range triggers {
-		if trigger.IsDir() {
-			continue
-		}
-
-		if strings.HasSuffix(trigger.Name(), ".trigger") {
-			ftrig, err := os.Open(filepath.Join(trigDir, trigger.Name()))
-			if err != nil {
-				return nil, err
-			}
-			defer ftrig.Close()
-
-			bytes, err := io.ReadAll(ftrig)
-			if err != nil {
-				return nil, err
-			}
-			lines := string(bytes)
-
-			result := re.FindAllStringSubmatch(lines, 1)
-			if result == nil {
-				continue
-			}
-
-			trigCode := SfApexTriggerCode{
-				Name:         result[0][1],
-				TargetEntity: result[0][2],
-				Events:       result[0][3],
-				Status:       "Active",
-			}
-			trigMap[strings.TrimSuffix(trigger.Name(), ".trigger")] = &trigCode
-		} else if strings.HasSuffix(trigger.Name(), ".trigger-meta.xml") {
-			ftrig, err := os.Open(filepath.Join(trigDir, trigger.Name()))
-			if err != nil {
-				return nil, err
-			}
-			defer ftrig.Close()
-
-			var trigMeta SfApexTriggerMeta
-			trigDec := xml.NewDecoder(ftrig)
-			err = trigDec.Decode(&trigMeta)
-			if err != nil {
-				return nil, err
-			}
-			trigMetaMap[strings.TrimSuffix(trigger.Name(), ".trigger-meta.xml")] = &trigMeta
-		}
-	}
-
-	for name, trigCode := range trigMap {
-		if trigMeta, ok := trigMetaMap[name]; ok {
-			trigCode.Status = trigMeta.Status
-		}
-	}
-
-	return trigMap, nil
 }
 
 func removeMissingRelations(sobjMap map[string]*SfCustomObject) {

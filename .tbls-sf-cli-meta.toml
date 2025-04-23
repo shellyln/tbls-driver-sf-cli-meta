@@ -1,0 +1,24 @@
+
+
+
+include = [
+  '*__c',
+  '*__mdt',
+  'Account',
+  'Contact',
+]
+
+#exclude = [
+#
+#]
+
+
+[[replacements]]
+def = ''
+prop = ''
+char = '$['
+
+[[replacements]]
+def = 'tables'
+prop = ''
+char = '$['

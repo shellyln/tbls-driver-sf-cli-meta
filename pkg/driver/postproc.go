@@ -1,16 +1,45 @@
 package driver
 
 import (
-	"encoding/json"
-	"os"
-	"path"
 	"reflect"
 	"strings"
 )
 
-type strPair struct {
-	A string
-	B string
+func PostProcess(config *PpDriverConfig, baseDir string, schema *Schema) error {
+	if len(config.PpReplacements) > 0 {
+		for i, r := range config.PpReplacements {
+			if len(r.Char) > 0 {
+				replPair := make([]string, len(r.Char)*2)
+				for i, c := range r.Char {
+					replPair[2*i] = string(c)
+					replPair[2*i+1] = "\\" + string(c)
+				}
+				config.PpReplacements[i].replacer = strings.NewReplacer(replPair...)
+			}
+		}
+	}
+	replDict := make(map[strPair]PpReplacement)
+
+	WalkAndApply("Schema", schema, func(ancestors []string, parent string, ty reflect.Type, value any) any {
+		switch ty.Kind() {
+		case reflect.String:
+			str := reflect.ValueOf(value).String()
+			lastAtor := ""
+			if len(ancestors) > 0 {
+				lastAtor = ancestors[len(ancestors)-1]
+			}
+			repl := findReplacer(lastAtor, parent, config.PpReplacements, replDict)
+
+			if repl != nil {
+				str = repl.Replace(str)
+			}
+
+			return str
+		}
+		return value
+	})
+
+	return nil
 }
 
 func findReplacer(def string, prop string, replacements []PpReplacement, dict map[strPair]PpReplacement) *strings.Replacer {
@@ -52,53 +81,5 @@ func findReplacer(def string, prop string, replacements []PpReplacement, dict ma
 	}
 
 	dict[key] = PpReplacement{}
-	return nil
-}
-
-func PostProcess(baseDir string, schema *Schema) error {
-	var config PpDriverConfig
-
-	bytes, err := os.ReadFile(path.Join(baseDir, ".tbls-sf-cli-meta.json"))
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return err
-		}
-	} else {
-		json.Unmarshal(bytes, &config)
-	}
-
-	if len(config.PpReplacements) > 0 {
-		for i, r := range config.PpReplacements {
-			if len(r.Char) > 0 {
-				replPair := make([]string, len(r.Char)*2)
-				for i, c := range r.Char {
-					replPair[2*i] = string(c)
-					replPair[2*i+1] = "\\" + string(c)
-				}
-				config.PpReplacements[i].replacer = strings.NewReplacer(replPair...)
-			}
-		}
-	}
-	replDict := make(map[strPair]PpReplacement)
-
-	WalkAndApply("Schema", schema, func(ancestors []string, parent string, ty reflect.Type, value any) any {
-		switch ty.Kind() {
-		case reflect.String:
-			str := reflect.ValueOf(value).String()
-			lastAtor := ""
-			if len(ancestors) > 0 {
-				lastAtor = ancestors[len(ancestors)-1]
-			}
-			repl := findReplacer(lastAtor, parent, config.PpReplacements, replDict)
-
-			if repl != nil {
-				str = repl.Replace(str)
-			}
-
-			return str
-		}
-		return value
-	})
-
 	return nil
 }
