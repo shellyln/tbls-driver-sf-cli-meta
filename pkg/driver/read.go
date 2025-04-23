@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func ReadSalseforceMeta(baseDir string) (SalesforceMeta, error) {
+func ReadSalseforceMeta(config *PpDriverConfig, baseDir string) (SalesforceMeta, error) {
 	var retval SalesforceMeta
 	var err error
 
@@ -34,6 +34,11 @@ func ReadSalseforceMeta(baseDir string) (SalesforceMeta, error) {
 	}
 
 	retval.SObjects, err = readObjectsMeta(baseDir, retval.GlobalValueSets)
+	if err != nil {
+		return retval, err
+	}
+
+	err = applyIncludeExclude(config, retval.SObjects)
 	if err != nil {
 		return retval, err
 	}
@@ -490,6 +495,46 @@ func readFieldsMeta(
 		objMeta.Fields[fld.Name()] = &fldMeta
 	}
 
+	return nil
+}
+
+func applyIncludeExclude(config *PpDriverConfig, sobjMap map[string]*SfCustomObject) error {
+	excList := make([]string, 0)
+	if config.Include != nil {
+		for _, sobjMeta := range sobjMap {
+			matchedAny := false
+			for _, inc := range *config.Include {
+				matched, err := matchWildcard(inc, sobjMeta.FullName)
+				if err != nil {
+					return err
+				}
+				if matched {
+					matchedAny = true
+					break
+				}
+			}
+			if !matchedAny {
+				excList = append(excList, sobjMeta.FullName)
+			}
+		}
+	}
+	if config.Exclude != nil {
+		for _, sobjMeta := range sobjMap {
+			for _, exc := range *config.Exclude {
+				matched, err := matchWildcard(exc, sobjMeta.FullName)
+				if err != nil {
+					return err
+				}
+				if matched {
+					excList = append(excList, sobjMeta.FullName)
+					break
+				}
+			}
+		}
+	}
+	for _, exc := range excList {
+		delete(sobjMap, exc)
+	}
 	return nil
 }
 

@@ -21,7 +21,7 @@ func Run() error {
 		return err
 	}
 
-	sfMeta, err := ReadSalseforceMeta(baseDir)
+	sfMeta, err := ReadSalseforceMeta(config, baseDir)
 	if err != nil {
 		return err
 	}

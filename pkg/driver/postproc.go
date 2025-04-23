@@ -2,6 +2,7 @@ package driver
 
 import (
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -82,4 +83,10 @@ func findReplacer(def string, prop string, replacements []PpReplacement, dict ma
 
 	dict[key] = PpReplacement{}
 	return nil
+}
+
+func matchWildcard(pattern, text string) (bool, error) {
+	escapedPattern := regexp.QuoteMeta(pattern)
+	regexPattern := "^" + strings.ReplaceAll(escapedPattern, `\*`, ".+") + "$"
+	return regexp.MatchString(regexPattern, text)
 }
