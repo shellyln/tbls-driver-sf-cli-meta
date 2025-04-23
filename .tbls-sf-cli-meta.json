@@ -1,9 +1,14 @@
 {
-    "escapedCharacters": "$[",
-    "targets": [
+    "replacements": [
         {
-            "pattern": "",
-            "escapedCharacters": "$["
+            "def": "",
+            "prop": "",
+            "char": "$["
+        },
+        {
+            "def": "tables",
+            "prop": "",
+            "char": "$["
         }
     ]
 }

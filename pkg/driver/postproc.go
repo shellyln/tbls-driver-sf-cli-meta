@@ -4,84 +4,55 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"reflect"
 	"strings"
 )
 
-func escapeSchemaValues(config PpDriverConfig, schema *Schema) {
-	if config.EscapedCharacters == "" {
-		return
+type strPair struct {
+	A string
+	B string
+}
+
+func findReplacer(def string, prop string, replacements []PpReplacement, dict map[strPair]PpReplacement) *strings.Replacer {
+	key := strPair{A: def, B: prop}
+	if repl, ok := dict[key]; ok {
+		return repl.replacer
 	}
 
-	replPair := make([]string, len(config.EscapedCharacters)*2)
-	for i, c := range config.EscapedCharacters {
-		replPair[2*i] = string(c)
-		replPair[2*i+1] = "\\" + string(c)
+	var defMatched *PpReplacement
+	var propMatched *PpReplacement
+	var globalMatched *PpReplacement
+
+	for _, repl := range replacements {
+		if strings.EqualFold(repl.Def, def) && strings.EqualFold(repl.Prop, prop) {
+			dict[key] = repl
+			return repl.replacer
+		}
+		if defMatched == nil && strings.EqualFold(repl.Def, def) && repl.Prop == "" {
+			defMatched = &repl
+		}
+		if propMatched == nil && repl.Def == "" && strings.EqualFold(repl.Prop, prop) {
+			propMatched = &repl
+		}
+		if globalMatched == nil && repl.Def == "" && repl.Prop == "" {
+			globalMatched = &repl
+		}
 	}
-	replacer := strings.NewReplacer(replPair...)
-
-	schema.Name = replacer.Replace(schema.Name)
-	schema.Desc = replacer.Replace(schema.Desc)
-
-	for i, tbl := range schema.Tables {
-		tbl.Name = replacer.Replace(tbl.Name)
-		tbl.Type = replacer.Replace(tbl.Type)
-		tbl.Def = replacer.Replace(tbl.Def)
-		tbl.Comment = replacer.Replace(tbl.Comment)
-
-		for j, col := range tbl.Columns {
-			col.Name = replacer.Replace(col.Name)
-			col.Type = replacer.Replace(col.Type)
-			if v, ok := col.Default.(string); ok {
-				col.Default = replacer.Replace(v)
-			}
-			col.ExtraDef = replacer.Replace(col.ExtraDef)
-			col.Comment = replacer.Replace(col.Comment)
-
-			tbl.Columns[j] = col
-		}
-
-		for j, con := range tbl.Constraints {
-			con.Name = replacer.Replace(con.Name)
-			con.Type = replacer.Replace(con.Type)
-			con.Table = replacer.Replace(con.Table)
-			con.ReferencedTable = replacer.Replace(con.ReferencedTable)
-			con.Comment = replacer.Replace(con.Comment)
-
-			//con.ReferencedColumns
-
-			tbl.Constraints[j] = con
-		}
-
-		for j, idx := range tbl.Indexes {
-			idx.Name = replacer.Replace(idx.Name)
-			idx.Table = replacer.Replace(idx.Table)
-			idx.Def = replacer.Replace(idx.Def)
-			idx.Comment = replacer.Replace(idx.Comment)
-
-			//idx.Columns
-
-			tbl.Indexes[j] = idx
-		}
-
-		for j, trg := range tbl.Triggers {
-			trg.Name = replacer.Replace(trg.Name)
-			trg.Def = replacer.Replace(trg.Def)
-			trg.Comment = replacer.Replace(trg.Comment)
-
-			tbl.Triggers[j] = trg
-		}
-
-		//tbl.Labels
-		//tbl.ReferencedTables
-
-		schema.Tables[i] = tbl
+	if propMatched != nil {
+		dict[key] = *propMatched
+		return propMatched.replacer
+	}
+	if defMatched != nil {
+		dict[key] = *defMatched
+		return defMatched.replacer
+	}
+	if globalMatched != nil {
+		dict[key] = *globalMatched
+		return globalMatched.replacer
 	}
 
-	//schema.Enums
-	//schema.Functions
-	//schema.Labels
-	//schema.Relations
-	//schema.Viewpoints
+	dict[key] = PpReplacement{}
+	return nil
 }
 
 func PostProcess(baseDir string, schema *Schema) error {
@@ -96,7 +67,38 @@ func PostProcess(baseDir string, schema *Schema) error {
 		json.Unmarshal(bytes, &config)
 	}
 
-	escapeSchemaValues(config, schema)
+	if len(config.PpReplacements) > 0 {
+		for i, r := range config.PpReplacements {
+			if len(r.Char) > 0 {
+				replPair := make([]string, len(r.Char)*2)
+				for i, c := range r.Char {
+					replPair[2*i] = string(c)
+					replPair[2*i+1] = "\\" + string(c)
+				}
+				config.PpReplacements[i].replacer = strings.NewReplacer(replPair...)
+			}
+		}
+	}
+	replDict := make(map[strPair]PpReplacement)
+
+	WalkAndApply("Schema", schema, func(ancestors []string, parent string, ty reflect.Type, value any) any {
+		switch ty.Kind() {
+		case reflect.String:
+			str := reflect.ValueOf(value).String()
+			lastAtor := ""
+			if len(ancestors) > 0 {
+				lastAtor = ancestors[len(ancestors)-1]
+			}
+			repl := findReplacer(lastAtor, parent, config.PpReplacements, replDict)
+
+			if repl != nil {
+				str = repl.Replace(str)
+			}
+
+			return str
+		}
+		return value
+	})
 
 	return nil
 }
