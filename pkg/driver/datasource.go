@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func makeBaseDir(curDir string) (string, error) {
+func MakeBaseDir(curDir string) (string, error) {
 	baseDir := curDir
 	dataSourceName := os.Getenv("TBLS_DSN")
 	if len(dataSourceName) > 0 {

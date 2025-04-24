@@ -16,7 +16,7 @@ func Run() error {
 		return err
 	}
 
-	baseDir, err := makeBaseDir(curDir)
+	baseDir, err := MakeBaseDir(curDir)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func Run() error {
 		return err
 	}
 
-	err = PostProcess(config, baseDir, schema)
+	err = PostProcess(config, schema)
 	if err != nil {
 		return err
 	}

@@ -8,15 +8,15 @@
 # The `include` and `exclude` keys are applied in that order.
 # The wildcard `*` can be used to match multiple characters.
 
-#include = [
-#  '*__c',
-#  '*__mdt',
-#  'Account',
-#  'Contact',
-#]
-#exclude = [
-#  'Contact',
-#]
+include = [
+  '*__c',
+  '*__mdt',
+  'Account',
+  'Con*',
+]
+exclude = [
+  'Baz__*',
+]
 
 
 # -------------------------------------------------------------
@@ -29,22 +29,22 @@
 # 3. `def` matches and `prop` is an empty string 
 # 4. both `def` and `prop` are empty strings
 
-[[replacements]]
+[[escape]]
 def = ''
 prop = ''
 char = '$'
 
-[[replacements]]
+[[escape]]
 def = ''
 prop = 'extra_def'
 char = '$[~'
 
-[[replacements]]
+[[escape]]
 def = 'tables'
 prop = ''
 char = '$['
 
-[[replacements]]
+[[escape]]
 def = 'tables'
 prop = 'comment'
 char = '$[*'

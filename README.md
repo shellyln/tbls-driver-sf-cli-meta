@@ -111,6 +111,57 @@ tbls doc
 [Sample document](sample/README.md)
 
 
+## ⚙️ Config (Optional)
+`./.tbls-sf-cli-meta.toml`
+```toml
+# Filter tables.
+# If the `include` key is present, it restricts the table to only those specified.
+# Then, if the `exclude` key is present, it excludes the specified tables.
+# The `include` and `exclude` keys are applied in that order.
+# The wildcard `*` can be used to match multiple characters.
+
+include = [
+  '*__c',
+  '*__mdt',
+  'Account',
+  'Con*',
+]
+exclude = [
+  'Baz__*',
+]
+
+
+# -------------------------------------------------------------
+
+# Escapes markdown special characters with a backslash. e.g. `*` -> '\*'
+# `def` is an object or array of objects such as `tables` or `columns` in the schema.
+# `prop` is a property of an object such as `name` or `type`.
+# 1. both `def` and `prop` match 
+# 2. `prop` matches and `def` is an empty string 
+# 3. `def` matches and `prop` is an empty string 
+# 4. both `def` and `prop` are empty strings
+
+[[escape]]
+def = ''
+prop = ''
+char = '$'
+
+[[escape]]
+def = ''
+prop = 'extra_def'
+char = '$[~'
+
+[[escape]]
+def = 'tables'
+prop = ''
+char = '$['
+
+[[escape]]
+def = 'tables'
+prop = 'comment'
+char = '$[*'
+```
+
 ## 📦 CI
 ### On GitHub Actions:
 

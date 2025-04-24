@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func ReadSalseforceMeta(config *PpDriverConfig, baseDir string) (SalesforceMeta, error) {
+func ReadSalseforceMeta(config *CfDriverConfig, baseDir string) (SalesforceMeta, error) {
 	var retval SalesforceMeta
 	var err error
 
@@ -498,7 +498,7 @@ func readFieldsMeta(
 	return nil
 }
 
-func applyIncludeExclude(config *PpDriverConfig, sobjMap map[string]*SfCustomObject) error {
+func applyIncludeExclude(config *CfDriverConfig, sobjMap map[string]*SfCustomObject) error {
 	excList := make([]string, 0)
 	if config.Include != nil {
 		for _, sobjMeta := range sobjMap {

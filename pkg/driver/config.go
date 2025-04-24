@@ -8,8 +8,8 @@ import (
 	"github.com/shellyln/go-loose-json-parser/marshal"
 )
 
-func ReadConfig(curDir string) (*PpDriverConfig, error) {
-	var config PpDriverConfig
+func ReadConfig(curDir string) (*CfDriverConfig, error) {
+	var config CfDriverConfig
 
 	bytes, err := os.ReadFile(path.Join(curDir, ".tbls-sf-cli-meta.toml"))
 	if err != nil {

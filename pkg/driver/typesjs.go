@@ -69,9 +69,6 @@ type Label struct {
 	Virtual bool   `json:"virtual,omitempty"`
 }
 
-// Labels ...
-//type Labels []Label
-
 // Relation ...
 type Relation struct {
 	Table             string   `json:"table"`
@@ -136,6 +133,3 @@ type ViewpointGroup struct {
 	Tables []string `json:"tables,omitempty"`
 	Color  string   `json:"color,omitempty"`
 }
-
-// Viewpoints ...
-//type Viewpoints []Viewpoint
