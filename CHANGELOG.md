@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.0.8
+* Enable escaping of user configured special characters in markdown.
+* Enable table filtering by user configured include/exclude.
+* Add config file.
+* Update README.
+
 ## v0.0.7
 * Improve GlobalPickValue output.
 * Edit templates and configurations for sample output.
