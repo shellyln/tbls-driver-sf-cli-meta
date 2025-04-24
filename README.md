@@ -112,7 +112,9 @@ tbls doc
 
 
 ## ⚙️ Config (Optional)
-`./.tbls-sf-cli-meta.toml`
+If there is a configuration file `.tbls-sf-cli-meta.toml` in the current directory, it is loaded.  
+It is not required.
+
 ```toml
 # Filter tables.
 # If the `include` key is present, it restricts the table to only those specified.
