@@ -48,8 +48,8 @@ Foo
 
 | Name | Type | Definition | Comment |
 | ---- | ---- | ---------- | ------- |
-| FooRestrictionRule1 | Restrict | $User.IsActive=true; CreatedBy.Division=$User.Division | description |
-| FooScopingRule1 | Scoping | $User.IsActive=true; CreatedBy.Division=$User.Division | description |
+| FooRestrictionRule1 | Restrict | \$User.IsActive=true; CreatedBy.Division=\$User.Division | description |
+| FooScopingRule1 | Scoping | \$User.IsActive=true; CreatedBy.Division=\$User.Division | description |
 | Id | Primary Key | Primary Key |  |
 | MyEmail__c | Unique | Unique Case Sensitive |  |
 | MyNumber__c | Unique | Unique Case Insensitive |  |

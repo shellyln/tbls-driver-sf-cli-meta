@@ -124,7 +124,7 @@ include = [
   '*__c',
   '*__mdt',
   'Account',
-  'Con*',
+  'Contact*',
 ]
 exclude = [
   'Baz__*',
