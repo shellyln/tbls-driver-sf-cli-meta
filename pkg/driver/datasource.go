@@ -8,12 +8,8 @@ import (
 	"strings"
 )
 
-func makeBaseDir() (string, error) {
-	baseDir, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
+func MakeBaseDir(curDir string) (string, error) {
+	baseDir := curDir
 	dataSourceName := os.Getenv("TBLS_DSN")
 	if len(dataSourceName) > 0 {
 		pos := strings.Index(dataSourceName, ":")

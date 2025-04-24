@@ -5,52 +5,33 @@ import (
 	"os"
 )
 
-func ReadSalseforceMeta(baseDir string) (SalesforceMeta, error) {
-	var retval SalesforceMeta
-	var err error
-
-	retval.GlobalValueSets, err = readGlobalValueSetsMeta(baseDir)
-	if err != nil {
-		return retval, err
-	}
-
-	retval.RestrictionRules, err = readRestrictionRulesMeta(baseDir)
-	if err != nil {
-		return retval, err
-	}
-
-	retval.Flows, err = readFlowsMeta(baseDir)
-	if err != nil {
-		return retval, err
-	}
-
-	retval.ApexTriggers, err = readApexTriggers(baseDir)
-	if err != nil {
-		return retval, err
-	}
-
-	retval.SObjects, err = readObjectsMeta(baseDir, retval.GlobalValueSets)
-	if err != nil {
-		return retval, err
-	}
-
-	removeMissingRelations(retval.SObjects)
-
-	return retval, nil
-}
-
 func Run() error {
-	baseDir, err := makeBaseDir()
+	curDir, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 
-	sfMeta, err := ReadSalseforceMeta(baseDir)
+	config, err := ReadConfig(curDir)
+	if err != nil {
+		return err
+	}
+
+	baseDir, err := MakeBaseDir(curDir)
+	if err != nil {
+		return err
+	}
+
+	sfMeta, err := ReadSalseforceMeta(config, baseDir)
 	if err != nil {
 		return err
 	}
 
 	schema, err := ConvertSchema(sfMeta)
+	if err != nil {
+		return err
+	}
+
+	err = PostProcess(config, schema)
 	if err != nil {
 		return err
 	}
