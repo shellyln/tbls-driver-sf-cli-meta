@@ -15,7 +15,7 @@ include = [
   'Con*',
 ]
 exclude = [
-  'Baz__*',
+  'Bazz__*',
 ]
 
 
