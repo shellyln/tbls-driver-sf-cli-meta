@@ -193,8 +193,8 @@ func readSharingRulesMeta(baseDir string) (map[string]*SfSharingRules, error) {
 	return ruleMap, nil
 }
 
-func readDuplicateRulesMeta(baseDir string) (map[string]*DuplicateRule, error) {
-	ruleMap := make(map[string]*DuplicateRule)
+func readDuplicateRulesMeta(baseDir string) (map[string]*SfDuplicateRule, error) {
+	ruleMap := make(map[string]*SfDuplicateRule)
 
 	rulesDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "duplicateRules"))
 	if err != nil {
@@ -223,7 +223,7 @@ func readDuplicateRulesMeta(baseDir string) (map[string]*DuplicateRule, error) {
 		}
 		defer frule.Close()
 
-		var ruleMeta DuplicateRule
+		var ruleMeta SfDuplicateRule
 		ruleDec := xml.NewDecoder(frule)
 		err = ruleDec.Decode(&ruleMeta)
 		if err != nil {
@@ -236,8 +236,8 @@ func readDuplicateRulesMeta(baseDir string) (map[string]*DuplicateRule, error) {
 	return ruleMap, nil
 }
 
-func readMatchingRulesMeta(baseDir string) (map[string]*MatchingRules, error) {
-	ruleMap := make(map[string]*MatchingRules)
+func readMatchingRulesMeta(baseDir string) (map[string]*SfMatchingRules, error) {
+	ruleMap := make(map[string]*SfMatchingRules)
 
 	rulesDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "matchingRules"))
 	if err != nil {
@@ -266,7 +266,7 @@ func readMatchingRulesMeta(baseDir string) (map[string]*MatchingRules, error) {
 		}
 		defer frule.Close()
 
-		var ruleMeta MatchingRules
+		var ruleMeta SfMatchingRules
 		ruleDec := xml.NewDecoder(frule)
 		err = ruleDec.Decode(&ruleMeta)
 		if err != nil {

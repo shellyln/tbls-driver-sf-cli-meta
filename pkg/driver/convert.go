@@ -291,12 +291,12 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 						ReferencedTable:   "",
 						Columns:           nil,
 						ReferencedColumns: nil,
-						Comment:           ruleMeta.Label + "; " + ruleMeta.Description,
+						Comment:           ruleMeta.Label,
 					}
-					// if !ruleMeta.Active {
-					// 	constraint.Def = "[Inactive] "
-					// }
-					// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+					constraint.Def += "From: " + "; To: "
+					if len(ruleMeta.Description) > 0 {
+						constraint.Comment += "; " + ruleMeta.Description
+					}
 					table.Constraints = append(table.Constraints, constraint)
 				}
 				for _, ruleMeta := range rules.SharingGuestRules {
@@ -308,12 +308,12 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 						ReferencedTable:   "",
 						Columns:           nil,
 						ReferencedColumns: nil,
-						Comment:           ruleMeta.Label + "; " + ruleMeta.Description,
+						Comment:           ruleMeta.Label,
 					}
-					// if !ruleMeta.Active {
-					// 	constraint.Def = "[Inactive] "
-					// }
-					// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+					constraint.Def += "From: " + "; To: "
+					if len(ruleMeta.Description) > 0 {
+						constraint.Comment += "; " + ruleMeta.Description
+					}
 					table.Constraints = append(table.Constraints, constraint)
 				}
 				for _, ruleMeta := range rules.SharingOwnerRules {
@@ -325,12 +325,12 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 						ReferencedTable:   "",
 						Columns:           nil,
 						ReferencedColumns: nil,
-						Comment:           ruleMeta.Label + "; " + ruleMeta.Description,
+						Comment:           ruleMeta.Label,
 					}
-					// if !ruleMeta.Active {
-					// 	constraint.Def = "[Inactive] "
-					// }
-					// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+					constraint.Def += "From: " + "; To: "
+					if len(ruleMeta.Description) > 0 {
+						constraint.Comment += "; " + ruleMeta.Description
+					}
 					table.Constraints = append(table.Constraints, constraint)
 				}
 				for _, ruleMeta := range rules.SharingTerritoryRules {
@@ -342,12 +342,12 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 						ReferencedTable:   "",
 						Columns:           nil,
 						ReferencedColumns: nil,
-						Comment:           ruleMeta.Label + "; " + ruleMeta.Description,
+						Comment:           ruleMeta.Label,
 					}
-					// if !ruleMeta.Active {
-					// 	constraint.Def = "[Inactive] "
-					// }
-					// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+					constraint.Def += "From: " + "; To: "
+					if len(ruleMeta.Description) > 0 {
+						constraint.Comment += "; " + ruleMeta.Description
+					}
 					table.Constraints = append(table.Constraints, constraint)
 				}
 			}
@@ -365,9 +365,9 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 					ReferencedColumns: nil,
 					Comment:           ruleMeta.Description,
 				}
-				// if !ruleMeta.Active {
-				// 	constraint.Def = "[Inactive] "
-				// }
+				if !ruleMeta.IsActive {
+					constraint.Def = "[Inactive] "
+				}
 				// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
 				table.Constraints = append(table.Constraints, constraint)
 			}

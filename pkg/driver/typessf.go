@@ -163,46 +163,77 @@ type SfSharingRules struct {
 }
 
 type SfSharingBaseRule struct {
-	FullName    string     `xml:"fullName"`
-	AccessLevel string     `xml:"accessLevel"`
-	Label       string     `xml:"label"`
-	Description string     `xml:"description"`
-	SharedTo    SfSharedTo `xml:"sharedTo"`
+	FullName        string                         `xml:"fullName"`
+	Label           string                         `xml:"label"`
+	AccessLevel     string                         `xml:"accessLevel"`
+	Description     string                         `xml:"description"`
+	SharedTo        SfSharedTo                     `xml:"sharedTo"`
+	AccountSettings []SfAccountSharingRuleSettings `xml:"accountSettings"`
 }
 
 type SfSharingCriteriaRule struct {
 	SfSharingBaseRule
+	BooleanFilter            string         `xml:"booleanFilter"`
+	CriteriaItems            []SfFilterItem `xml:"criteriaItems"`
+	IncludeRecordsOwnedByAll bool           `xml:"includeRecordsOwnedByAll"`
 }
 
 type SfSharingGuestRules struct {
 	SfSharingBaseRule
+	BooleanFilter          string         `xml:"booleanFilter"`
+	CriteriaItems          []SfFilterItem `xml:"criteriaItems"`
+	IncludeHVUOwnedRecords bool           `xml:"includeHVUOwnedRecords"`
 }
 
 type SfSharingOwnerRules struct {
 	SfSharingBaseRule
+	SharedFrom SfSharedTo `xml:"sharedFrom"`
 }
 
 type SfSharingTerritoryRules struct {
-	SfSharingBaseRule
+	SfSharingOwnerRules
 }
 
 type SfSharedTo struct {
-	AllCustomerPortalUsers *struct{} `xml:"allCustomerPortalUsers"`
-	AllInternalUsers       *struct{} `xml:"allInternalUsers"`
-	AllPartnerUsers        *struct{} `xml:"allPartnerUsers"`
-	ChannelProgramGroup    *struct{} `xml:"channelProgramGroup"`
-	Group                  []string  `xml:"group"`
-	GuestUser              []string  `xml:"guestUser"`
+	AllCustomerPortalUsers      *struct{} `xml:"allCustomerPortalUsers"`
+	AllInternalUsers            *struct{} `xml:"allInternalUsers"`
+	AllPartnerUsers             *struct{} `xml:"allPartnerUsers"`
+	ChannelProgramGroup         *struct{} `xml:"channelProgramGroup"`
+	Group                       []string  `xml:"group"`
+	GuestUser                   []string  `xml:"guestUser"`
+	ManagerSubordinates         []string  `xml:"managerSubordinates"`
+	Managers                    []string  `xml:"managers"`
+	PortalRole                  []string  `xml:"portalRole"`
+	PortalRoleAndSubordinates   []string  `xml:"portalRoleAndSubordinates"`
+	Role                        []string  `xml:"role"`
+	RoleAndSubordinates         []string  `xml:"roleAndSubordinates"`
+	RoleAndSubordinatesInternal []string  `xml:"roleAndSubordinatesInternal"`
+	Territory                   []string  `xml:"territory"`
+	TerritoryAndSubordinates    []string  `xml:"territoryAndSubordinates"`
+	Queue                       []string  `xml:"queue"`
 }
 
-type DuplicateRule struct {
+type SfAccountSharingRuleSettings struct {
+	CaseAccessLevel        string `xml:"caseAccessLevel"`
+	ContactAccessLevel     string `xml:"contactAccessLevel"`
+	OpportunityAccessLevel string `xml:"opportunityAccessLevel"`
+}
+
+type SfFilterItem struct {
+	Field      string `xml:"field"`
+	Operation  string `xml:"operation"`
+	Value      string `xml:"value"`
+	ValueField string `xml:"valueField"`
+}
+
+type SfDuplicateRule struct {
 	XMLName     xml.Name `xml:"DuplicateRule"`
 	IsActive    bool     `xml:"isActive"`
 	MasterLabel string   `xml:"masterLabel"`
 	Description string   `xml:"description"`
 }
 
-type MatchingRules struct {
+type SfMatchingRules struct {
 	XMLName xml.Name `xml:"MatchingRules"`
 }
 
@@ -235,8 +266,8 @@ type SalesforceMeta struct {
 	GlobalValueSets  map[string]*SfGlobalValueSet
 	RestrictionRules map[string]*SfRestrictionRule
 	SharingRules     map[string]*SfSharingRules
-	DuplicateRules   map[string]*DuplicateRule
-	MatchingRules    map[string]*MatchingRules
+	DuplicateRules   map[string]*SfDuplicateRule
+	MatchingRules    map[string]*SfMatchingRules
 	Flows            map[string]*SfFlow
 	ApexTriggers     map[string]*SfApexTriggerCode
 	SObjects         map[string]*SfCustomObject
