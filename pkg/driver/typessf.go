@@ -154,6 +154,58 @@ type SfRestrictionRule struct {
 	Version         int      `xml:"version"`
 }
 
+type SfSharingRules struct {
+	XMLName               xml.Name                  `xml:"SharingRules"`
+	SharingCriteriaRules  []SfSharingCriteriaRule   `xml:"sharingCriteriaRules"`
+	SharingGuestRules     []SfSharingGuestRules     `xml:"sharingGuestRules"`
+	SharingOwnerRules     []SfSharingOwnerRules     `xml:"sharingOwnerRules"`
+	SharingTerritoryRules []SfSharingTerritoryRules `xml:"sharingTerritoryRules"`
+}
+
+type SfSharingBaseRule struct {
+	FullName    string     `xml:"fullName"`
+	AccessLevel string     `xml:"accessLevel"`
+	Label       string     `xml:"label"`
+	Description string     `xml:"description"`
+	SharedTo    SfSharedTo `xml:"sharedTo"`
+}
+
+type SfSharingCriteriaRule struct {
+	SfSharingBaseRule
+}
+
+type SfSharingGuestRules struct {
+	SfSharingBaseRule
+}
+
+type SfSharingOwnerRules struct {
+	SfSharingBaseRule
+}
+
+type SfSharingTerritoryRules struct {
+	SfSharingBaseRule
+}
+
+type SfSharedTo struct {
+	AllCustomerPortalUsers *struct{} `xml:"allCustomerPortalUsers"`
+	AllInternalUsers       *struct{} `xml:"allInternalUsers"`
+	AllPartnerUsers        *struct{} `xml:"allPartnerUsers"`
+	ChannelProgramGroup    *struct{} `xml:"channelProgramGroup"`
+	Group                  []string  `xml:"group"`
+	GuestUser              []string  `xml:"guestUser"`
+}
+
+type DuplicateRule struct {
+	XMLName     xml.Name `xml:"DuplicateRule"`
+	IsActive    bool     `xml:"isActive"`
+	MasterLabel string   `xml:"masterLabel"`
+	Description string   `xml:"description"`
+}
+
+type MatchingRules struct {
+	XMLName xml.Name `xml:"MatchingRules"`
+}
+
 type SfFlow struct {
 	XMLName xml.Name `xml:"Flow"`
 	Name    string
@@ -182,6 +234,9 @@ type SfApexTriggerMeta struct {
 type SalesforceMeta struct {
 	GlobalValueSets  map[string]*SfGlobalValueSet
 	RestrictionRules map[string]*SfRestrictionRule
+	SharingRules     map[string]*SfSharingRules
+	DuplicateRules   map[string]*DuplicateRule
+	MatchingRules    map[string]*MatchingRules
 	Flows            map[string]*SfFlow
 	ApexTriggers     map[string]*SfApexTriggerCode
 	SObjects         map[string]*SfCustomObject

@@ -23,6 +23,21 @@ func ReadSalseforceMeta(config *CfDriverConfig, baseDir string) (SalesforceMeta,
 		return retval, err
 	}
 
+	retval.SharingRules, err = readSharingRulesMeta(baseDir)
+	if err != nil {
+		return retval, err
+	}
+
+	retval.DuplicateRules, err = readDuplicateRulesMeta(baseDir)
+	if err != nil {
+		return retval, err
+	}
+
+	retval.MatchingRules, err = readMatchingRulesMeta(baseDir)
+	if err != nil {
+		return retval, err
+	}
+
 	retval.Flows, err = readFlowsMeta(baseDir)
 	if err != nil {
 		return retval, err
@@ -130,6 +145,135 @@ func readRestrictionRulesMeta(baseDir string) (map[string]*SfRestrictionRule, er
 		}
 
 		ruleMap[rule.Name()] = &ruleMeta
+	}
+
+	return ruleMap, nil
+}
+
+func readSharingRulesMeta(baseDir string) (map[string]*SfSharingRules, error) {
+	ruleMap := make(map[string]*SfSharingRules)
+
+	rulesDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "sharingRules"))
+	if err != nil {
+		return nil, err
+	}
+	rules, err := os.ReadDir(rulesDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return ruleMap, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	for _, rule := range rules {
+		if rule.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(rule.Name(), ".sharingRules-meta.xml") {
+			continue
+		}
+
+		frule, err := os.Open(filepath.Join(rulesDir, rule.Name()))
+		if err != nil {
+			return nil, err
+		}
+		defer frule.Close()
+
+		var ruleMeta SfSharingRules
+		ruleDec := xml.NewDecoder(frule)
+		err = ruleDec.Decode(&ruleMeta)
+		if err != nil {
+			return nil, err
+		}
+
+		ruleMap[strings.TrimSuffix(rule.Name(), ".sharingRules-meta.xml")] = &ruleMeta
+	}
+
+	return ruleMap, nil
+}
+
+func readDuplicateRulesMeta(baseDir string) (map[string]*DuplicateRule, error) {
+	ruleMap := make(map[string]*DuplicateRule)
+
+	rulesDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "duplicateRules"))
+	if err != nil {
+		return nil, err
+	}
+	rules, err := os.ReadDir(rulesDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return ruleMap, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	for _, rule := range rules {
+		if rule.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(rule.Name(), ".duplicateRule-meta.xml") {
+			continue
+		}
+
+		frule, err := os.Open(filepath.Join(rulesDir, rule.Name()))
+		if err != nil {
+			return nil, err
+		}
+		defer frule.Close()
+
+		var ruleMeta DuplicateRule
+		ruleDec := xml.NewDecoder(frule)
+		err = ruleDec.Decode(&ruleMeta)
+		if err != nil {
+			return nil, err
+		}
+
+		ruleMap[strings.TrimSuffix(rule.Name(), ".duplicateRule-meta.xml")] = &ruleMeta
+	}
+
+	return ruleMap, nil
+}
+
+func readMatchingRulesMeta(baseDir string) (map[string]*MatchingRules, error) {
+	ruleMap := make(map[string]*MatchingRules)
+
+	rulesDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "matchingRules"))
+	if err != nil {
+		return nil, err
+	}
+	rules, err := os.ReadDir(rulesDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return ruleMap, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	for _, rule := range rules {
+		if rule.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(rule.Name(), ".matchingRule-meta.xml") {
+			continue
+		}
+
+		frule, err := os.Open(filepath.Join(rulesDir, rule.Name()))
+		if err != nil {
+			return nil, err
+		}
+		defer frule.Close()
+
+		var ruleMeta MatchingRules
+		ruleDec := xml.NewDecoder(frule)
+		err = ruleDec.Decode(&ruleMeta)
+		if err != nil {
+			return nil, err
+		}
+
+		ruleMap[strings.TrimSuffix(rule.Name(), ".matchingRule-meta.xml")] = &ruleMeta
 	}
 
 	return ruleMap, nil

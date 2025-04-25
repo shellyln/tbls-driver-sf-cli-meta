@@ -280,6 +280,99 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 			}
 		}
 
+		for objName, rules := range sfMeta.SharingRules {
+			if objName == objMeta.FullName {
+				for _, ruleMeta := range rules.SharingCriteriaRules {
+					constraint := Constraint{
+						Name:              ruleMeta.FullName,
+						Type:              "SharingCriteriaRule",
+						Def:               "",
+						Table:             objMeta.FullName,
+						ReferencedTable:   "",
+						Columns:           nil,
+						ReferencedColumns: nil,
+						Comment:           ruleMeta.Label + "; " + ruleMeta.Description,
+					}
+					// if !ruleMeta.Active {
+					// 	constraint.Def = "[Inactive] "
+					// }
+					// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+					table.Constraints = append(table.Constraints, constraint)
+				}
+				for _, ruleMeta := range rules.SharingGuestRules {
+					constraint := Constraint{
+						Name:              ruleMeta.FullName,
+						Type:              "SharingGuestRule",
+						Def:               "",
+						Table:             objMeta.FullName,
+						ReferencedTable:   "",
+						Columns:           nil,
+						ReferencedColumns: nil,
+						Comment:           ruleMeta.Label + "; " + ruleMeta.Description,
+					}
+					// if !ruleMeta.Active {
+					// 	constraint.Def = "[Inactive] "
+					// }
+					// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+					table.Constraints = append(table.Constraints, constraint)
+				}
+				for _, ruleMeta := range rules.SharingOwnerRules {
+					constraint := Constraint{
+						Name:              ruleMeta.FullName,
+						Type:              "SharingOwnerRule",
+						Def:               "",
+						Table:             objMeta.FullName,
+						ReferencedTable:   "",
+						Columns:           nil,
+						ReferencedColumns: nil,
+						Comment:           ruleMeta.Label + "; " + ruleMeta.Description,
+					}
+					// if !ruleMeta.Active {
+					// 	constraint.Def = "[Inactive] "
+					// }
+					// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+					table.Constraints = append(table.Constraints, constraint)
+				}
+				for _, ruleMeta := range rules.SharingTerritoryRules {
+					constraint := Constraint{
+						Name:              ruleMeta.FullName,
+						Type:              "SharingTerritoryRule",
+						Def:               "",
+						Table:             objMeta.FullName,
+						ReferencedTable:   "",
+						Columns:           nil,
+						ReferencedColumns: nil,
+						Comment:           ruleMeta.Label + "; " + ruleMeta.Description,
+					}
+					// if !ruleMeta.Active {
+					// 	constraint.Def = "[Inactive] "
+					// }
+					// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+					table.Constraints = append(table.Constraints, constraint)
+				}
+			}
+		}
+
+		for key, ruleMeta := range sfMeta.DuplicateRules {
+			if strings.HasPrefix(key, objMeta.FullName+".") {
+				constraint := Constraint{
+					Name:              ruleMeta.MasterLabel,
+					Type:              "DuplicateRule",
+					Def:               "",
+					Table:             objMeta.FullName,
+					ReferencedTable:   "",
+					Columns:           nil,
+					ReferencedColumns: nil,
+					Comment:           ruleMeta.Description,
+				}
+				// if !ruleMeta.Active {
+				// 	constraint.Def = "[Inactive] "
+				// }
+				// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+				table.Constraints = append(table.Constraints, constraint)
+			}
+		}
+
 		schema.Tables = append(schema.Tables, table)
 	}
 
