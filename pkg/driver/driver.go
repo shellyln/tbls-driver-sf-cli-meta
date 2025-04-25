@@ -26,7 +26,7 @@ func Run() error {
 		return err
 	}
 
-	schema, err := ConvertSchema(sfMeta)
+	schema, err := ConvertSchema(config, sfMeta)
 	if err != nil {
 		return err
 	}

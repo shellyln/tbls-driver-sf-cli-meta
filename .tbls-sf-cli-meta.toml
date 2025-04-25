@@ -2,6 +2,10 @@
 
 # -------------------------------------------------------------
 
+# If you want only the label name to appear in the comment column of a table column, set to true.
+suppressFieldDescription = false
+
+
 # Filter tables.
 # If the `include` key is present, it restricts the table to only those specified.
 # Then, if the `exclude` key is present, it excludes the specified tables.
@@ -14,6 +18,7 @@ include = [
   'Account',
   'Contact*',
 ]
+
 exclude = [
   'Baz__*',
 ]

@@ -3,9 +3,10 @@ package driver
 import "strings"
 
 type CfDriverConfig struct {
-	Escape  []CfEscape `json:"escape"`
-	Include *[]string  `json:"include"`
-	Exclude *[]string  `json:"exclude"`
+	SuppressFieldDescription bool       `json:"suppressFieldDescription"`
+	Escape                   []CfEscape `json:"escape"`
+	Include                  *[]string  `json:"include"`
+	Exclude                  *[]string  `json:"exclude"`
 }
 
 type CfEscape struct {

@@ -116,6 +116,10 @@ If there is a configuration file `.tbls-sf-cli-meta.toml` in the current directo
 It is not required.
 
 ```toml
+# If you want only the label name to appear in the comment column of a table column, set to true.
+suppressFieldDescription = false
+```
+```toml
 # Filter tables.
 # If the `include` key is present, it restricts the table to only those specified.
 # Then, if the `exclude` key is present, it excludes the specified tables.
@@ -128,13 +132,12 @@ include = [
   'Account',
   'Contact*',
 ]
+
 exclude = [
   'Baz__*',
 ]
-
-
-# -------------------------------------------------------------
-
+```
+```toml
 # Escapes markdown special characters with a backslash. e.g. `*` -> '\*'
 # `def` is an object or array of objects such as `tables` or `columns` in the schema.
 # `prop` is a property of an object such as `name` or `type`.

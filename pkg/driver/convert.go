@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
+func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, error) {
 
 	schema := Schema{
 		Name:      "",
@@ -77,7 +77,7 @@ func ConvertSchema(sfMeta SalesforceMeta) (*Schema, error) {
 				}
 			}
 
-			if len(fldMeta.Description) > 0 {
+			if !config.SuppressFieldDescription && len(fldMeta.Description) > 0 {
 				column.Comment += "; " + fldMeta.Description
 			}
 
