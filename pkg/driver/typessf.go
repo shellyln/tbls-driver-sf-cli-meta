@@ -233,7 +233,26 @@ type SfDuplicateRule struct {
 	IsActive                bool                       `xml:"isActive"`
 	MasterLabel             string                     `xml:"masterLabel"`
 	Description             string                     `xml:"description"`
+	ActionOnInsert          string                     `xml:"actionOnInsert"`
+	ActionOnUpdate          string                     `xml:"actionOnUpdate"`
+	AlertText               string                     `xml:"alertText"`
+	SecurityOption          string                     `xml:"securityOption"`
+	SortOrder               int                        `xml:"sortOrder"`
+	DuplicateRuleFilter     DuplicateRuleFilter        `xml:"duplicateRuleFilter"`
+	OperationsOnInsert      []string                   `xml:"operationsOnInsert"`
+	OperationsOnUpdate      []string                   `xml:"operationsOnUpdate"`
 	DuplicateRuleMatchRules []SfDuplicateRuleMatchRule `xml:"duplicateRuleMatchRules"`
+}
+
+type DuplicateRuleFilter struct {
+	BooleanFilter            string                    `xml:"booleanFilter"`
+	DuplicateRuleFilterItems []DuplicateRuleFilterItem `xml:"duplicateRuleFilterItems"`
+}
+
+type DuplicateRuleFilterItem struct {
+	SfFilterItem
+	SortOrder int    `xml:"sortOrder"`
+	Table     string `xml:"table"`
 }
 
 type SfDuplicateRuleMatchRule struct {
@@ -242,7 +261,22 @@ type SfDuplicateRuleMatchRule struct {
 }
 
 type SfMatchingRules struct {
-	XMLName xml.Name `xml:"MatchingRules"`
+	XMLName       xml.Name         `xml:"MatchingRules"`
+	MatchingRules []SfMatchingRule `xml:"matchingRules"`
+}
+
+type SfMatchingRule struct {
+	FullName          string               `xml:"fullName"`
+	Description       string               `xml:"description"`
+	Label             string               `xml:"label"`
+	MatchingRuleItems []SfMatchingRuleItem `xml:"matchingRuleItems"`
+	RuleStatus        string               `xml:"ruleStatus"`
+}
+
+type SfMatchingRuleItem struct {
+	BlankValueBehavior string `xml:"blankValueBehavior"`
+	FieldName          string `xml:"fieldName"`
+	MatchingMethod     string `xml:"matchingMethod"`
 }
 
 type SfFlow struct {
