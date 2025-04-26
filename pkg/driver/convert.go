@@ -364,7 +364,12 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 				if !ruleMeta.IsActive {
 					constraint.Def = "[Inactive] "
 				}
-				// constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+				for i, m := range ruleMeta.DuplicateRuleMatchRules {
+					if i > 0 {
+						constraint.Def += "; "
+					}
+					constraint.Def += "(" + m.MatchRuleSObjectType + ")" + m.MatchingRule
+				}
 				table.Constraints = append(table.Constraints, constraint)
 			}
 		}

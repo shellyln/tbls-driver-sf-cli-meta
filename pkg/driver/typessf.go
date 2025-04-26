@@ -229,10 +229,16 @@ type SfFilterItem struct {
 }
 
 type SfDuplicateRule struct {
-	XMLName     xml.Name `xml:"DuplicateRule"`
-	IsActive    bool     `xml:"isActive"`
-	MasterLabel string   `xml:"masterLabel"`
-	Description string   `xml:"description"`
+	XMLName                 xml.Name                   `xml:"DuplicateRule"`
+	IsActive                bool                       `xml:"isActive"`
+	MasterLabel             string                     `xml:"masterLabel"`
+	Description             string                     `xml:"description"`
+	DuplicateRuleMatchRules []SfDuplicateRuleMatchRule `xml:"duplicateRuleMatchRules"`
+}
+
+type SfDuplicateRuleMatchRule struct {
+	MatchRuleSObjectType string `xml:"matchRuleSObjectType"`
+	MatchingRule         string `xml:"matchingRule"`
 }
 
 type SfMatchingRules struct {
