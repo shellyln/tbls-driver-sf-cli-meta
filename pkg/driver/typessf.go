@@ -171,18 +171,20 @@ type SfSharingBaseRule struct {
 	AccountSettings []SfAccountSharingRuleSettings `xml:"accountSettings"`
 }
 
-type SfSharingCriteriaRule struct {
+type SfSharingBaseCriteriaRule struct {
 	SfSharingBaseRule
-	BooleanFilter            string         `xml:"booleanFilter"`
-	CriteriaItems            []SfFilterItem `xml:"criteriaItems"`
-	IncludeRecordsOwnedByAll bool           `xml:"includeRecordsOwnedByAll"`
+	BooleanFilter string         `xml:"booleanFilter"`
+	CriteriaItems []SfFilterItem `xml:"criteriaItems"`
+}
+
+type SfSharingCriteriaRule struct {
+	SfSharingBaseCriteriaRule
+	IncludeRecordsOwnedByAll bool `xml:"includeRecordsOwnedByAll"`
 }
 
 type SfSharingGuestRules struct {
-	SfSharingBaseRule
-	BooleanFilter          string         `xml:"booleanFilter"`
-	CriteriaItems          []SfFilterItem `xml:"criteriaItems"`
-	IncludeHVUOwnedRecords bool           `xml:"includeHVUOwnedRecords"`
+	SfSharingBaseCriteriaRule
+	IncludeHVUOwnedRecords bool `xml:"includeHVUOwnedRecords"`
 }
 
 type SfSharingOwnerRules struct {
