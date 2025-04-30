@@ -6,6 +6,17 @@ import (
 	"strings"
 )
 
+type permMetaAndObjPerm struct {
+	name string
+	objp SfObjectPermission
+}
+
+type permMetaAndFldPerm struct {
+	name     string
+	permMeta *SfPermissionSet
+	fldp     SfFieldPermission
+}
+
 func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, error) {
 
 	schema := Schema{
@@ -23,17 +34,7 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 		Viewpoints: make([]Viewpoint, 0),
 	}
 
-	type permMetaAndObjPerm struct {
-		name string
-		objp SfObjectPermission
-	}
 	objPermsMap := make(map[string][]permMetaAndObjPerm)
-
-	type permMetaAndFldPerm struct {
-		name     string
-		permMeta *SfPermissionSet
-		fldp     SfFieldPermission
-	}
 	fldPermsMap := make(map[string][]permMetaAndFldPerm)
 
 	for permName, permMeta := range sfMeta.PermissionSets {
@@ -69,43 +70,7 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 			table.Type = "Standard object"
 		}
 
-		for _, x := range objPermsMap[objMeta.FullName] {
-			label := Label{
-				Name: x.name + ":",
-			}
-			if x.objp.AllowCreate {
-				label.Name += "C"
-			} else {
-				label.Name += "-"
-			}
-			if x.objp.AllowRead {
-				label.Name += "R"
-			} else {
-				label.Name += "-"
-			}
-			if x.objp.AllowEdit {
-				label.Name += "U"
-			} else {
-				label.Name += "-"
-			}
-			if x.objp.AllowDelete {
-				label.Name += "D"
-			} else {
-				label.Name += "-"
-			}
-			label.Name += "/"
-			if x.objp.ViewAllRecords {
-				label.Name += "V"
-			} else {
-				label.Name += "-"
-			}
-			if x.objp.ModifyAllRecords {
-				label.Name += "M"
-			} else {
-				label.Name += "-"
-			}
-			table.Labels = append(table.Labels, label)
-		}
+		convertObjectPermissions(&table, objMeta, objPermsMap)
 
 		for _, fldMeta := range objMeta.Fields {
 			column := Column{
@@ -118,22 +83,7 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 				Comment:  fldMeta.Label,
 			}
 
-			for _, x := range fldPermsMap[objMeta.FullName+"."+fldMeta.FullName] {
-				label := Label{
-					Name: x.name + ":",
-				}
-				if x.fldp.Readable {
-					label.Name += "R"
-				} else {
-					label.Name += "-"
-				}
-				if x.fldp.Editable {
-					label.Name += "U"
-				} else {
-					label.Name += "-"
-				}
-				column.Labels = append(column.Labels, label)
-			}
+			convertFieldPermissions(&column, objMeta, fldMeta, fldPermsMap)
 
 			if len(fldMeta.ValueSet.ValueSetDefinition.Value) > 0 {
 				if len(fldMeta.ValueSet.ValueSetName) > 0 {
@@ -195,131 +145,245 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 				column.Default = fldMeta.DefaultValue
 			}
 
-			if fldMeta.FullName == "RecordTypeId" {
-				recTypes := make([]*SfRecordType, 0)
-				for _, recTypeMeta := range objMeta.RecordTypes {
-					recTypes = append(recTypes, recTypeMeta)
-				}
-				sort.Slice(recTypes, func(i, j int) bool {
-					return strings.Compare(recTypes[i].FullName, recTypes[j].FullName) < 0
-				})
-				for _, recTypeMeta := range recTypes {
-					if len(column.ExtraDef) > 0 {
-						column.ExtraDef += "; "
-					}
-					if recTypeMeta.Label != recTypeMeta.FullName {
-						column.ExtraDef += "{" + recTypeMeta.Label + ", " + recTypeMeta.FullName + "}"
-					} else {
-						column.ExtraDef += recTypeMeta.FullName
-					}
-				}
-			}
+			convertRecordTypes(&column, objMeta, fldMeta)
 
 			table.Columns = append(table.Columns, column)
 
-			if fldMeta.ExternalId {
-				index := Index{
-					Name:    fldMeta.FullName,
-					Def:     "",
-					Table:   objMeta.FullName,
-					Columns: []string{fldMeta.FullName},
-					Comment: "",
-				}
-				if fldMeta.FullName == "Id" {
-					index.Def = "Primary Key"
-				} else if fldMeta.FullName == "Name" {
-					index.Def = fldMeta.Type
-				} else if fldMeta.Unique {
-					index.Def = "Unique External Id"
-				} else {
-					index.Def = "Nonunique External Id"
-				}
-				table.Indexes = append(table.Indexes, index)
-			}
-
-			if fldMeta.FullName == "Id" {
-				constraint := Constraint{
-					Name:              fldMeta.FullName,
-					Type:              "Primary Key",
-					Def:               "Primary Key",
-					Table:             objMeta.FullName,
-					ReferencedTable:   "",
-					Columns:           []string{fldMeta.FullName},
-					ReferencedColumns: nil,
-					Comment:           "",
-				}
-				table.Constraints = append(table.Constraints, constraint)
-			}
-
-			if fldMeta.Unique {
-				constraint := Constraint{
-					Name:              fldMeta.FullName,
-					Type:              "Unique",
-					Def:               "",
-					Table:             objMeta.FullName,
-					ReferencedTable:   "",
-					Columns:           []string{fldMeta.FullName},
-					ReferencedColumns: nil,
-					Comment:           "",
-				}
-				if fldMeta.CaseSensitive {
-					constraint.Def = "Unique Case Sensitive"
-				} else {
-					constraint.Def = "Unique Case Insensitive"
-				}
-				table.Constraints = append(table.Constraints, constraint)
-			}
-
-			if fldMeta.Type == "MasterDetail" || fldMeta.Type == "Lookup" {
-				if len(fldMeta.ReferenceTo) > 0 {
-					relation := Relation{
-						Table:             objMeta.FullName,
-						Columns:           []string{fldMeta.FullName},
-						Cardinality:       "zero or more",
-						ParentTable:       fldMeta.ReferenceTo,
-						ParentColumns:     []string{"Id"},
-						ParentCardinality: "exactly one",
-						Def:               fldMeta.Type + "\n(" + objMeta.FullName + "." + fldMeta.FullName + ")\n(" + fldMeta.ReferenceTo + "." + fldMeta.RelationshipName + ")",
-					}
-					schema.Relations = append(schema.Relations, relation)
-				}
-			}
+			convertFieldConstraints(&table, objMeta, fldMeta)
+			convertRelations(&schema, &sfMeta, objMeta, fldMeta)
 		}
 
-		for _, flowMeta := range sfMeta.Flows {
-			if flowMeta.Start.Object == objMeta.FullName && len(flowMeta.Start.RecordTriggerType) > 0 {
-				trigger := Trigger{
-					Name:    "flow." + flowMeta.Name,
-					Def:     "",
-					Comment: flowMeta.Label,
-				}
-				if flowMeta.Status != "Active" {
-					trigger.Def = "[Inactive] "
-				}
-				trigger.Def += flowMeta.Start.RecordTriggerType + ", " + flowMeta.Start.TriggerType
-				table.Triggers = append(table.Triggers, trigger)
+		convertFlows(&table, &sfMeta, objMeta)
+		convertApexTriggers(&table, &sfMeta, objMeta)
+		convertValidationRules(&table, objMeta)
+		convertRestrictionRules(&table, &sfMeta, objMeta)
+		convertSharingRules(&table, &sfMeta, objMeta)
+		convertDuplicateRules(&table, &sfMeta, objMeta)
+
+		schema.Tables = append(schema.Tables, table)
+	}
+
+	convertGlobalValueSets(&schema, &sfMeta)
+
+	return &schema, nil
+}
+
+func convertObjectPermissions(table *Table, objMeta *SfCustomObject, objPermsMap map[string][]permMetaAndObjPerm) {
+	for _, x := range objPermsMap[objMeta.FullName] {
+		label := Label{
+			Name: x.name + ":",
+		}
+		if x.objp.AllowCreate {
+			label.Name += "C"
+		} else {
+			label.Name += "-"
+		}
+		if x.objp.AllowRead {
+			label.Name += "R"
+		} else {
+			label.Name += "-"
+		}
+		if x.objp.AllowEdit {
+			label.Name += "U"
+		} else {
+			label.Name += "-"
+		}
+		if x.objp.AllowDelete {
+			label.Name += "D"
+		} else {
+			label.Name += "-"
+		}
+		label.Name += "/"
+		if x.objp.ViewAllRecords {
+			label.Name += "V"
+		} else {
+			label.Name += "-"
+		}
+		if x.objp.ModifyAllRecords {
+			label.Name += "M"
+		} else {
+			label.Name += "-"
+		}
+		table.Labels = append(table.Labels, label)
+	}
+}
+
+func convertFieldPermissions(column *Column, objMeta *SfCustomObject, fldMeta *SfCustomField, fldPermsMap map[string][]permMetaAndFldPerm) {
+	for _, x := range fldPermsMap[objMeta.FullName+"."+fldMeta.FullName] {
+		label := Label{
+			Name: x.name + ":",
+		}
+		if x.fldp.Readable {
+			label.Name += "R"
+		} else {
+			label.Name += "-"
+		}
+		if x.fldp.Editable {
+			label.Name += "U"
+		} else {
+			label.Name += "-"
+		}
+		column.Labels = append(column.Labels, label)
+	}
+}
+
+func convertRecordTypes(column *Column, objMeta *SfCustomObject, fldMeta *SfCustomField) {
+	if fldMeta.FullName == "RecordTypeId" {
+		recTypes := make([]*SfRecordType, 0)
+		for _, recTypeMeta := range objMeta.RecordTypes {
+			recTypes = append(recTypes, recTypeMeta)
+		}
+		sort.Slice(recTypes, func(i, j int) bool {
+			return strings.Compare(recTypes[i].FullName, recTypes[j].FullName) < 0
+		})
+		for _, recTypeMeta := range recTypes {
+			if len(column.ExtraDef) > 0 {
+				column.ExtraDef += "; "
+			}
+			if recTypeMeta.Label != recTypeMeta.FullName {
+				column.ExtraDef += "{" + recTypeMeta.Label + ", " + recTypeMeta.FullName + "}"
+			} else {
+				column.ExtraDef += recTypeMeta.FullName
 			}
 		}
+	}
+}
 
-		for _, trigMeta := range sfMeta.ApexTriggers {
-			if trigMeta.TargetEntity == objMeta.FullName {
-				trigger := Trigger{
-					Name:    "trigger." + trigMeta.Name,
-					Def:     "",
-					Comment: "",
-				}
-				if trigMeta.Status != "Active" {
-					trigger.Def = "[Inactive] "
-				}
-				trigger.Def += trigMeta.Events
-				table.Triggers = append(table.Triggers, trigger)
-			}
+func convertFieldConstraints(table *Table, objMeta *SfCustomObject, fldMeta *SfCustomField) {
+	if fldMeta.ExternalId {
+		index := Index{
+			Name:    fldMeta.FullName,
+			Def:     "",
+			Table:   objMeta.FullName,
+			Columns: []string{fldMeta.FullName},
+			Comment: "",
 		}
+		if fldMeta.FullName == "Id" {
+			index.Def = "Primary Key"
+		} else if fldMeta.FullName == "Name" {
+			index.Def = fldMeta.Type
+		} else if fldMeta.Unique {
+			index.Def = "Unique External Id"
+		} else {
+			index.Def = "Nonunique External Id"
+		}
+		table.Indexes = append(table.Indexes, index)
+	}
 
-		for _, ruleMeta := range objMeta.ValidationRules {
+	if fldMeta.FullName == "Id" {
+		constraint := Constraint{
+			Name:              fldMeta.FullName,
+			Type:              "Primary Key",
+			Def:               "Primary Key",
+			Table:             objMeta.FullName,
+			ReferencedTable:   "",
+			Columns:           []string{fldMeta.FullName},
+			ReferencedColumns: nil,
+			Comment:           "",
+		}
+		table.Constraints = append(table.Constraints, constraint)
+	}
+
+	if fldMeta.Unique {
+		constraint := Constraint{
+			Name:              fldMeta.FullName,
+			Type:              "Unique",
+			Def:               "",
+			Table:             objMeta.FullName,
+			ReferencedTable:   "",
+			Columns:           []string{fldMeta.FullName},
+			ReferencedColumns: nil,
+			Comment:           "",
+		}
+		if fldMeta.CaseSensitive {
+			constraint.Def = "Unique Case Sensitive"
+		} else {
+			constraint.Def = "Unique Case Insensitive"
+		}
+		table.Constraints = append(table.Constraints, constraint)
+	}
+}
+
+func convertRelations(schema *Schema, sfMeta *SalesforceMeta, objMeta *SfCustomObject, fldMeta *SfCustomField) {
+	if fldMeta.Type == "MasterDetail" || fldMeta.Type == "Lookup" {
+		if len(fldMeta.ReferenceTo) > 0 {
+			relation := Relation{
+				Table:             objMeta.FullName,
+				Columns:           []string{fldMeta.FullName},
+				Cardinality:       "zero or more",
+				ParentTable:       fldMeta.ReferenceTo,
+				ParentColumns:     []string{"Id"},
+				ParentCardinality: "exactly one",
+				Def:               fldMeta.Type + "\n(" + objMeta.FullName + "." + fldMeta.FullName + ")\n(" + fldMeta.ReferenceTo + "." + fldMeta.RelationshipName + ")",
+			}
+			schema.Relations = append(schema.Relations, relation)
+		}
+	}
+}
+
+func convertFlows(table *Table, sfMeta *SalesforceMeta, objMeta *SfCustomObject) {
+	for _, flowMeta := range sfMeta.Flows {
+		if flowMeta.Start.Object == objMeta.FullName && len(flowMeta.Start.RecordTriggerType) > 0 {
+			trigger := Trigger{
+				Name:    "flow." + flowMeta.Name,
+				Def:     "",
+				Comment: flowMeta.Label,
+			}
+			if flowMeta.Status != "Active" {
+				trigger.Def = "[Inactive] "
+			}
+			trigger.Def += flowMeta.Start.RecordTriggerType + ", " + flowMeta.Start.TriggerType
+			table.Triggers = append(table.Triggers, trigger)
+		}
+	}
+}
+
+func convertApexTriggers(table *Table, sfMeta *SalesforceMeta, objMeta *SfCustomObject) {
+	for _, trigMeta := range sfMeta.ApexTriggers {
+		if trigMeta.TargetEntity == objMeta.FullName {
+			trigger := Trigger{
+				Name:    "trigger." + trigMeta.Name,
+				Def:     "",
+				Comment: "",
+			}
+			if trigMeta.Status != "Active" {
+				trigger.Def = "[Inactive] "
+			}
+			trigger.Def += trigMeta.Events
+			table.Triggers = append(table.Triggers, trigger)
+		}
+	}
+}
+
+func convertValidationRules(table *Table, objMeta *SfCustomObject) {
+	for _, ruleMeta := range objMeta.ValidationRules {
+		constraint := Constraint{
+			Name:              ruleMeta.FullName,
+			Type:              "ValidationRule",
+			Def:               "",
+			Table:             objMeta.FullName,
+			ReferencedTable:   "",
+			Columns:           nil,
+			ReferencedColumns: nil,
+			Comment:           ruleMeta.Description,
+		}
+		if !ruleMeta.Active {
+			constraint.Def = "[Inactive] "
+		}
+		if len(ruleMeta.ErrorDisplayField) > 0 {
+			constraint.Def += "[" + ruleMeta.ErrorDisplayField + "] "
+		}
+		constraint.Def += ruleMeta.ErrorConditionFormula
+		table.Constraints = append(table.Constraints, constraint)
+	}
+}
+
+func convertRestrictionRules(table *Table, sfMeta *SalesforceMeta, objMeta *SfCustomObject) {
+	for _, ruleMeta := range sfMeta.RestrictionRules {
+		if ruleMeta.TargetEntity == objMeta.FullName {
 			constraint := Constraint{
-				Name:              ruleMeta.FullName,
-				Type:              "ValidationRule",
+				Name:              ruleMeta.MasterLabel,
+				Type:              ruleMeta.EnforcementType,
 				Def:               "",
 				Table:             objMeta.FullName,
 				ReferencedTable:   "",
@@ -330,159 +394,140 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 			if !ruleMeta.Active {
 				constraint.Def = "[Inactive] "
 			}
-			if len(ruleMeta.ErrorDisplayField) > 0 {
-				constraint.Def += "[" + ruleMeta.ErrorDisplayField + "] "
-			}
-			constraint.Def += ruleMeta.ErrorConditionFormula
+			constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
 			table.Constraints = append(table.Constraints, constraint)
 		}
+	}
+}
 
-		for _, ruleMeta := range sfMeta.RestrictionRules {
-			if ruleMeta.TargetEntity == objMeta.FullName {
+func convertSharingRules(table *Table, sfMeta *SalesforceMeta, objMeta *SfCustomObject) {
+	for objName, rules := range sfMeta.SharingRules {
+		if objName == objMeta.FullName {
+			for _, ruleMeta := range rules.SharingCriteriaRules {
 				constraint := Constraint{
-					Name:              ruleMeta.MasterLabel,
-					Type:              ruleMeta.EnforcementType,
-					Def:               "",
+					Name:              ruleMeta.FullName,
+					Type:              "SharingCriteriaRule",
+					Def:               ruleMeta.ToDescription(),
 					Table:             objMeta.FullName,
 					ReferencedTable:   "",
 					Columns:           nil,
 					ReferencedColumns: nil,
-					Comment:           ruleMeta.Description,
+					Comment:           ruleMeta.Label,
 				}
-				if !ruleMeta.Active {
-					constraint.Def = "[Inactive] "
+				if len(ruleMeta.Description) > 0 {
+					constraint.Comment += "; " + ruleMeta.Description
 				}
-				constraint.Def += ruleMeta.UserCriteria + "; " + ruleMeta.RecordFilter
+				table.Constraints = append(table.Constraints, constraint)
+			}
+			for _, ruleMeta := range rules.SharingGuestRules {
+				constraint := Constraint{
+					Name:              ruleMeta.FullName,
+					Type:              "SharingGuestRule",
+					Def:               ruleMeta.ToDescription(),
+					Table:             objMeta.FullName,
+					ReferencedTable:   "",
+					Columns:           nil,
+					ReferencedColumns: nil,
+					Comment:           ruleMeta.Label,
+				}
+				if len(ruleMeta.Description) > 0 {
+					constraint.Comment += "; " + ruleMeta.Description
+				}
+				table.Constraints = append(table.Constraints, constraint)
+			}
+			for _, ruleMeta := range rules.SharingOwnerRules {
+				constraint := Constraint{
+					Name:              ruleMeta.FullName,
+					Type:              "SharingOwnerRule",
+					Def:               ruleMeta.ToDescription(),
+					Table:             objMeta.FullName,
+					ReferencedTable:   "",
+					Columns:           nil,
+					ReferencedColumns: nil,
+					Comment:           ruleMeta.Label,
+				}
+				if len(ruleMeta.Description) > 0 {
+					constraint.Comment += "; " + ruleMeta.Description
+				}
+				table.Constraints = append(table.Constraints, constraint)
+			}
+			for _, ruleMeta := range rules.SharingTerritoryRules {
+				constraint := Constraint{
+					Name:              ruleMeta.FullName,
+					Type:              "SharingTerritoryRule",
+					Def:               ruleMeta.ToDescription(),
+					Table:             objMeta.FullName,
+					ReferencedTable:   "",
+					Columns:           nil,
+					ReferencedColumns: nil,
+					Comment:           ruleMeta.Label,
+				}
+				if len(ruleMeta.Description) > 0 {
+					constraint.Comment += "; " + ruleMeta.Description
+				}
 				table.Constraints = append(table.Constraints, constraint)
 			}
 		}
+	}
+}
 
-		for objName, rules := range sfMeta.SharingRules {
-			if objName == objMeta.FullName {
-				for _, ruleMeta := range rules.SharingCriteriaRules {
-					constraint := Constraint{
-						Name:              ruleMeta.FullName,
-						Type:              "SharingCriteriaRule",
-						Def:               ruleMeta.ToDescription(),
-						Table:             objMeta.FullName,
-						ReferencedTable:   "",
-						Columns:           nil,
-						ReferencedColumns: nil,
-						Comment:           ruleMeta.Label,
-					}
-					if len(ruleMeta.Description) > 0 {
-						constraint.Comment += "; " + ruleMeta.Description
-					}
-					table.Constraints = append(table.Constraints, constraint)
-				}
-				for _, ruleMeta := range rules.SharingGuestRules {
-					constraint := Constraint{
-						Name:              ruleMeta.FullName,
-						Type:              "SharingGuestRule",
-						Def:               ruleMeta.ToDescription(),
-						Table:             objMeta.FullName,
-						ReferencedTable:   "",
-						Columns:           nil,
-						ReferencedColumns: nil,
-						Comment:           ruleMeta.Label,
-					}
-					if len(ruleMeta.Description) > 0 {
-						constraint.Comment += "; " + ruleMeta.Description
-					}
-					table.Constraints = append(table.Constraints, constraint)
-				}
-				for _, ruleMeta := range rules.SharingOwnerRules {
-					constraint := Constraint{
-						Name:              ruleMeta.FullName,
-						Type:              "SharingOwnerRule",
-						Def:               ruleMeta.ToDescription(),
-						Table:             objMeta.FullName,
-						ReferencedTable:   "",
-						Columns:           nil,
-						ReferencedColumns: nil,
-						Comment:           ruleMeta.Label,
-					}
-					if len(ruleMeta.Description) > 0 {
-						constraint.Comment += "; " + ruleMeta.Description
-					}
-					table.Constraints = append(table.Constraints, constraint)
-				}
-				for _, ruleMeta := range rules.SharingTerritoryRules {
-					constraint := Constraint{
-						Name:              ruleMeta.FullName,
-						Type:              "SharingTerritoryRule",
-						Def:               ruleMeta.ToDescription(),
-						Table:             objMeta.FullName,
-						ReferencedTable:   "",
-						Columns:           nil,
-						ReferencedColumns: nil,
-						Comment:           ruleMeta.Label,
-					}
-					if len(ruleMeta.Description) > 0 {
-						constraint.Comment += "; " + ruleMeta.Description
-					}
-					table.Constraints = append(table.Constraints, constraint)
-				}
+func convertDuplicateRules(table *Table, sfMeta *SalesforceMeta, objMeta *SfCustomObject) {
+	for key, ruleMeta := range sfMeta.DuplicateRules {
+		if strings.HasPrefix(key, objMeta.FullName+".") {
+			constraint := Constraint{
+				Name:              ruleMeta.MasterLabel,
+				Type:              "DuplicateRule",
+				Def:               "",
+				Table:             objMeta.FullName,
+				ReferencedTable:   "",
+				Columns:           nil,
+				ReferencedColumns: nil,
+				Comment:           ruleMeta.Description,
 			}
-		}
-
-		for key, ruleMeta := range sfMeta.DuplicateRules {
-			if strings.HasPrefix(key, objMeta.FullName+".") {
-				constraint := Constraint{
-					Name:              ruleMeta.MasterLabel,
-					Type:              "DuplicateRule",
-					Def:               "",
-					Table:             objMeta.FullName,
-					ReferencedTable:   "",
-					Columns:           nil,
-					ReferencedColumns: nil,
-					Comment:           ruleMeta.Description,
+			if !ruleMeta.IsActive {
+				constraint.Def = "[Inactive] "
+			}
+			for i, m := range ruleMeta.DuplicateRuleMatchRules {
+				if i > 0 {
+					constraint.Def += "; "
 				}
-				if !ruleMeta.IsActive {
-					constraint.Def = "[Inactive] "
-				}
-				for i, m := range ruleMeta.DuplicateRuleMatchRules {
-					if i > 0 {
-						constraint.Def += "; "
+				if len(m.ObjectMapping.MappingFields) > 0 {
+					constraint.Def += " {"
+					for j, mf := range m.ObjectMapping.MappingFields {
+						if j > 0 {
+							constraint.Def += ", "
+						}
+						constraint.Def += mf.InputField
 					}
-					if len(m.ObjectMapping.MappingFields) > 0 {
+					constraint.Def += "} "
+				}
+				constraint.Def += "(" + m.MatchRuleSObjectType + ") " + m.MatchingRule
+				if mm, ok := sfMeta.MatchingRules[objMeta.FullName]; ok {
+					for _, matchMeta := range mm.MatchingRules {
+						if matchMeta.FullName != m.MatchingRule {
+							continue
+						}
+						if matchMeta.RuleStatus != "Active" {
+							constraint.Def = "[" + matchMeta.RuleStatus + "] "
+						}
 						constraint.Def += " {"
-						for j, mf := range m.ObjectMapping.MappingFields {
-							if j > 0 {
+						for k, item := range matchMeta.MatchingRuleItems {
+							if k > 0 {
 								constraint.Def += ", "
 							}
-							constraint.Def += mf.InputField
+							constraint.Def += item.FieldName
 						}
-						constraint.Def += "} "
-					}
-					constraint.Def += "(" + m.MatchRuleSObjectType + ") " + m.MatchingRule
-					if mm, ok := sfMeta.MatchingRules[objMeta.FullName]; ok {
-						for _, matchMeta := range mm.MatchingRules {
-							if matchMeta.FullName != m.MatchingRule {
-								continue
-							}
-							if matchMeta.RuleStatus != "Active" {
-								constraint.Def = "[" + matchMeta.RuleStatus + "] "
-							}
-							constraint.Def += " {"
-							for k, item := range matchMeta.MatchingRuleItems {
-								if k > 0 {
-									constraint.Def += ", "
-								}
-								constraint.Def += item.FieldName
-							}
-							constraint.Def += "}"
-							break
-						}
+						constraint.Def += "}"
+						break
 					}
 				}
-				table.Constraints = append(table.Constraints, constraint)
 			}
+			table.Constraints = append(table.Constraints, constraint)
 		}
-
-		schema.Tables = append(schema.Tables, table)
 	}
+}
 
+func convertGlobalValueSets(schema *Schema, sfMeta *SalesforceMeta) {
 	for _, gvs := range sfMeta.GlobalValueSets {
 		enum := Enum{
 			Name:   gvs.Name,
@@ -502,6 +547,4 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 		}
 		schema.Enums = append(schema.Enums, enum)
 	}
-
-	return &schema, nil
 }
