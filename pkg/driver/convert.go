@@ -6,17 +6,6 @@ import (
 	"strings"
 )
 
-type permMetaAndObjPerm struct {
-	name string
-	objp SfObjectPermission
-}
-
-type permMetaAndFldPerm struct {
-	name     string
-	permMeta *SfPermissionSet
-	fldp     SfFieldPermission
-}
-
 func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, error) {
 
 	schema := Schema{
@@ -166,6 +155,17 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 	convertGlobalValueSets(&schema, &sfMeta)
 
 	return &schema, nil
+}
+
+type permMetaAndObjPerm struct {
+	name string
+	objp SfObjectPermission
+}
+
+type permMetaAndFldPerm struct {
+	name     string
+	permMeta *SfPermissionSet
+	fldp     SfFieldPermission
 }
 
 func convertObjectPermissions(table *Table, objMeta *SfCustomObject, objPermsMap map[string][]permMetaAndObjPerm) {
