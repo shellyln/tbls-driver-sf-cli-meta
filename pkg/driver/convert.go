@@ -47,6 +47,50 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 			table.Type = "Standard object"
 		}
 
+		for permName, permMeta := range sfMeta.PermissionSets {
+			for _, objp := range permMeta.ObjectPermissions {
+				if objp.Object != objMeta.FullName {
+					continue
+				}
+				label := Label{
+					Name: permName + ":",
+				}
+				if objp.AllowCreate {
+					label.Name += "C"
+				} else {
+					label.Name += "-"
+				}
+				if objp.AllowRead {
+					label.Name += "R"
+				} else {
+					label.Name += "-"
+				}
+				if objp.AllowEdit {
+					label.Name += "U"
+				} else {
+					label.Name += "-"
+				}
+				if objp.AllowDelete {
+					label.Name += "D"
+				} else {
+					label.Name += "-"
+				}
+				label.Name += "/"
+				if objp.ViewAllRecords {
+					label.Name += "V"
+				} else {
+					label.Name += "-"
+				}
+				if objp.ModifyAllRecords {
+					label.Name += "M"
+				} else {
+					label.Name += "-"
+				}
+				table.Labels = append(table.Labels, label)
+				break
+			}
+		}
+
 		for _, fldMeta := range objMeta.Fields {
 			column := Column{
 				Name:     fldMeta.FullName,

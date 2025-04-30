@@ -114,6 +114,25 @@ type SfCustomField struct {
 	} `xml:"valueSet"`
 }
 
+type SfPermissionSet struct {
+	XMLName           xml.Name `xml:"PermissionSet"`
+	ObjectPermissions []struct {
+		Object           string `xml:"object"`
+		AllowCreate      bool   `xml:"allowCreate"`
+		AllowRead        bool   `xml:"allowRead"`
+		AllowEdit        bool   `xml:"allowEdit"`
+		AllowDelete      bool   `xml:"allowDelete"`
+		ViewAllRecords   bool   `xml:"viewAllRecords"`
+		ModifyAllRecords bool   `xml:"modifyAllRecords"`
+	} `xml:"objectPermissions"`
+
+	FieldPermissions []struct {
+		Field    string `xml:"field"`
+		Readable bool   `xml:"readable"`
+		Editable bool   `xml:"editable"`
+	} `xml:"fieldPermissions"`
+}
+
 type SfCustomValue struct {
 	FullName string `xml:"fullName"`
 	Default  bool   `xml:"default"`
@@ -314,6 +333,7 @@ type SfApexTriggerMeta struct {
 }
 
 type SalesforceMeta struct {
+	PermissionSets   map[string]*SfPermissionSet
 	GlobalValueSets  map[string]*SfGlobalValueSet
 	RestrictionRules map[string]*SfRestrictionRule
 	SharingRules     map[string]*SfSharingRules

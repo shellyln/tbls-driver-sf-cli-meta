@@ -13,6 +13,11 @@ func ReadSalseforceMeta(config *CfDriverConfig, baseDir string) (SalesforceMeta,
 	var retval SalesforceMeta
 	var err error
 
+	retval.PermissionSets, err = readPermissionSetsMeta(baseDir)
+	if err != nil {
+		return retval, err
+	}
+
 	retval.GlobalValueSets, err = readGlobalValueSetsMeta(baseDir)
 	if err != nil {
 		return retval, err
@@ -61,6 +66,49 @@ func ReadSalseforceMeta(config *CfDriverConfig, baseDir string) (SalesforceMeta,
 	removeMissingRelations(retval.SObjects)
 
 	return retval, nil
+}
+
+func readPermissionSetsMeta(baseDir string) (map[string]*SfPermissionSet, error) {
+	permMap := make(map[string]*SfPermissionSet)
+
+	permsDir, err := filepath.Abs(filepath.Join(baseDir, "force-app", "main", "default", "permissionsets"))
+	if err != nil {
+		return nil, err
+	}
+	perms, err := os.ReadDir(permsDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return permMap, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	for _, perm := range perms {
+		if perm.IsDir() {
+			continue
+		}
+		if !strings.HasSuffix(perm.Name(), ".permissionset-meta.xml") {
+			continue
+		}
+
+		fperm, err := os.Open(filepath.Join(permsDir, perm.Name()))
+		if err != nil {
+			return nil, err
+		}
+		defer fperm.Close()
+
+		var permMeta SfPermissionSet
+		permDec := xml.NewDecoder(fperm)
+		err = permDec.Decode(&permMeta)
+		if err != nil {
+			return nil, err
+		}
+
+		permMap[strings.TrimSuffix(perm.Name(), ".permissionset-meta.xml")] = &permMeta
+	}
+
+	return permMap, nil
 }
 
 func readGlobalValueSetsMeta(baseDir string) (map[string]*SfGlobalValueSet, error) {
