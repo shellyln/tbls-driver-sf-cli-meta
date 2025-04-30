@@ -22,9 +22,12 @@ Bar
 
 ## Constraints
 
-| Name | Type | Definition |
-| ---- | ---- | ---------- |
-| Id | Primary Key | Primary Key |
+| Name | Type | Definition | Comment |
+| ---- | ---- | ---------- | ------- |
+| BarSharingRule1 | SharingOwnerRule | [Edit]; From AllInternalUsers; To RoleAndSubordinatesInternal{CEO} | Bar Sharing Rule1; description |
+| BarSharingRule2 | SharingOwnerRule | [Read]; From Role{MarketingTeam}; To AllInternalUsers | Bar Sharing Rule2 |
+| BarSharingRule3 | SharingCriteriaRule | [Read][IncludeRecordsOwnedByAll]; From {1 OR 2, Name startsWith A, Name equals B}; To AllInternalUsers | Bar Sharing Rule3 |
+| Id | Primary Key | Primary Key |  |
 
 ## Indexes
 

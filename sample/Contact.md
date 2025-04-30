@@ -51,9 +51,10 @@
 
 ## Constraints
 
-| Name | Type | Definition |
-| ---- | ---- | ---------- |
-| Id | Primary Key | Primary Key |
+| Name | Type | Definition | Comment |
+| ---- | ---- | ---------- | ------- |
+| Id | Primary Key | Primary Key |  |
+| Standard Rule for Contacts with Duplicate Leads | DuplicateRule | [Inactive]  {FirstName, LastName, Phone, Email, MailingCity, MailingStreet, MailingPostalCode, Title, AccountId} (Lead) Standard_Lead_Match_Rule_v1_0 | Identify contacts with duplicate leads. |
 
 ## Indexes
 

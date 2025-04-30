@@ -55,9 +55,10 @@
 
 ## Constraints
 
-| Name | Type | Definition |
-| ---- | ---- | ---------- |
-| Id | Primary Key | Primary Key |
+| Name | Type | Definition | Comment |
+| ---- | ---- | ---------- | ------- |
+| Id | Primary Key | Primary Key |  |
+| MyAccountDuplicationRule1 | DuplicateRule | [Inactive] (Account) MyAccountMatchingRule1 {Name, AccountNumber, Phone} | description |
 
 ## Indexes
 
