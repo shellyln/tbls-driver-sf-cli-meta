@@ -256,8 +256,17 @@ type DuplicateRuleFilterItem struct {
 }
 
 type SfDuplicateRuleMatchRule struct {
-	MatchRuleSObjectType string `xml:"matchRuleSObjectType"`
-	MatchingRule         string `xml:"matchingRule"`
+	MatchRuleSObjectType string          `xml:"matchRuleSObjectType"`
+	MatchingRule         string          `xml:"matchingRule"`
+	ObjectMapping        SfObjectMapping `xml:"objectMapping"`
+}
+
+type SfObjectMapping struct {
+	InputObject   string `xml:"inputObject"`
+	MappingFields []struct {
+		InputField  string `xml:"inputField"`
+		OutputField string `xml:"outputField"`
+	} `xml:"mappingFields"`
 }
 
 type SfMatchingRules struct {

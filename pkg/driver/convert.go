@@ -368,7 +368,36 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 					if i > 0 {
 						constraint.Def += "; "
 					}
-					constraint.Def += "(" + m.MatchRuleSObjectType + ")" + m.MatchingRule
+					if len(m.ObjectMapping.MappingFields) > 0 {
+						constraint.Def += " {"
+						for j, mf := range m.ObjectMapping.MappingFields {
+							if j > 0 {
+								constraint.Def += ", "
+							}
+							constraint.Def += mf.InputField
+						}
+						constraint.Def += "} "
+					}
+					constraint.Def += "(" + m.MatchRuleSObjectType + ") " + m.MatchingRule
+					if mm, ok := sfMeta.MatchingRules[objMeta.FullName]; ok {
+						for _, matchMeta := range mm.MatchingRules {
+							if matchMeta.FullName != m.MatchingRule {
+								continue
+							}
+							if matchMeta.RuleStatus != "Active" {
+								constraint.Def = "[" + matchMeta.RuleStatus + "] "
+							}
+							constraint.Def += " {"
+							for k, item := range matchMeta.MatchingRuleItems {
+								if k > 0 {
+									constraint.Def += ", "
+								}
+								constraint.Def += item.FieldName
+							}
+							constraint.Def += "}"
+							break
+						}
+					}
 				}
 				table.Constraints = append(table.Constraints, constraint)
 			}
