@@ -115,22 +115,25 @@ type SfCustomField struct {
 }
 
 type SfPermissionSet struct {
-	XMLName           xml.Name `xml:"PermissionSet"`
-	ObjectPermissions []struct {
-		Object           string `xml:"object"`
-		AllowCreate      bool   `xml:"allowCreate"`
-		AllowRead        bool   `xml:"allowRead"`
-		AllowEdit        bool   `xml:"allowEdit"`
-		AllowDelete      bool   `xml:"allowDelete"`
-		ViewAllRecords   bool   `xml:"viewAllRecords"`
-		ModifyAllRecords bool   `xml:"modifyAllRecords"`
-	} `xml:"objectPermissions"`
+	XMLName           xml.Name             `xml:"PermissionSet"`
+	ObjectPermissions []SfObjectPermission `xml:"objectPermissions"`
+	FieldPermissions  []SfFieldPermission  `xml:"fieldPermissions"`
+}
 
-	FieldPermissions []struct {
-		Field    string `xml:"field"`
-		Readable bool   `xml:"readable"`
-		Editable bool   `xml:"editable"`
-	} `xml:"fieldPermissions"`
+type SfObjectPermission struct {
+	Object           string `xml:"object"`
+	AllowCreate      bool   `xml:"allowCreate"`
+	AllowRead        bool   `xml:"allowRead"`
+	AllowEdit        bool   `xml:"allowEdit"`
+	AllowDelete      bool   `xml:"allowDelete"`
+	ViewAllRecords   bool   `xml:"viewAllRecords"`
+	ModifyAllRecords bool   `xml:"modifyAllRecords"`
+}
+
+type SfFieldPermission struct {
+	Field    string `xml:"field"`
+	Readable bool   `xml:"readable"`
+	Editable bool   `xml:"editable"`
 }
 
 type SfCustomValue struct {

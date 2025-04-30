@@ -95,7 +95,7 @@ format:
   sort: true
 ```
 
-Reading `flows`, `globalValueSets`, `restrictionRules`,`triggers` and `objects` metadata.  
+Reading `duplicateRules`, `flows`, `globalValueSets`, `matchingRules`, `permissionsets`, `restrictionRules`, `sharingRules`, `triggers` and `objects` metadata.  
 Metadata should be located in the repository as follows:
 ```
 .

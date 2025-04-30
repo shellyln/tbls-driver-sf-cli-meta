@@ -23,6 +23,28 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 		Viewpoints: make([]Viewpoint, 0),
 	}
 
+	type permMetaAndObjPerm struct {
+		name string
+		objp SfObjectPermission
+	}
+	objPermsMap := make(map[string][]permMetaAndObjPerm)
+
+	type permMetaAndFldPerm struct {
+		name     string
+		permMeta *SfPermissionSet
+		fldp     SfFieldPermission
+	}
+	fldPermsMap := make(map[string][]permMetaAndFldPerm)
+
+	for permName, permMeta := range sfMeta.PermissionSets {
+		for _, objp := range permMeta.ObjectPermissions {
+			objPermsMap[objp.Object] = append(objPermsMap[objp.Object], permMetaAndObjPerm{permName, objp})
+		}
+		for _, fldp := range permMeta.FieldPermissions {
+			fldPermsMap[fldp.Field] = append(fldPermsMap[fldp.Field], permMetaAndFldPerm{permName, permMeta, fldp})
+		}
+	}
+
 	for _, objMeta := range sfMeta.SObjects {
 		table := Table{
 			Name:             objMeta.FullName,
@@ -47,48 +69,42 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 			table.Type = "Standard object"
 		}
 
-		for permName, permMeta := range sfMeta.PermissionSets {
-			for _, objp := range permMeta.ObjectPermissions {
-				if objp.Object != objMeta.FullName {
-					continue
-				}
-				label := Label{
-					Name: permName + ":",
-				}
-				if objp.AllowCreate {
-					label.Name += "C"
-				} else {
-					label.Name += "-"
-				}
-				if objp.AllowRead {
-					label.Name += "R"
-				} else {
-					label.Name += "-"
-				}
-				if objp.AllowEdit {
-					label.Name += "U"
-				} else {
-					label.Name += "-"
-				}
-				if objp.AllowDelete {
-					label.Name += "D"
-				} else {
-					label.Name += "-"
-				}
-				label.Name += "/"
-				if objp.ViewAllRecords {
-					label.Name += "V"
-				} else {
-					label.Name += "-"
-				}
-				if objp.ModifyAllRecords {
-					label.Name += "M"
-				} else {
-					label.Name += "-"
-				}
-				table.Labels = append(table.Labels, label)
-				break
+		for _, x := range objPermsMap[objMeta.FullName] {
+			label := Label{
+				Name: x.name + ":",
 			}
+			if x.objp.AllowCreate {
+				label.Name += "C"
+			} else {
+				label.Name += "-"
+			}
+			if x.objp.AllowRead {
+				label.Name += "R"
+			} else {
+				label.Name += "-"
+			}
+			if x.objp.AllowEdit {
+				label.Name += "U"
+			} else {
+				label.Name += "-"
+			}
+			if x.objp.AllowDelete {
+				label.Name += "D"
+			} else {
+				label.Name += "-"
+			}
+			label.Name += "/"
+			if x.objp.ViewAllRecords {
+				label.Name += "V"
+			} else {
+				label.Name += "-"
+			}
+			if x.objp.ModifyAllRecords {
+				label.Name += "M"
+			} else {
+				label.Name += "-"
+			}
+			table.Labels = append(table.Labels, label)
 		}
 
 		for _, fldMeta := range objMeta.Fields {
@@ -100,6 +116,23 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 				ExtraDef: "",
 				Labels:   make([]Label, 0),
 				Comment:  fldMeta.Label,
+			}
+
+			for _, x := range fldPermsMap[objMeta.FullName+"."+fldMeta.FullName] {
+				label := Label{
+					Name: x.name + ":",
+				}
+				if x.fldp.Readable {
+					label.Name += "R"
+				} else {
+					label.Name += "-"
+				}
+				if x.fldp.Editable {
+					label.Name += "U"
+				} else {
+					label.Name += "-"
+				}
+				column.Labels = append(column.Labels, label)
 			}
 
 			if len(fldMeta.ValueSet.ValueSetDefinition.Value) > 0 {
