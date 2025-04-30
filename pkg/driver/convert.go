@@ -60,88 +60,7 @@ func ConvertSchema(config *CfDriverConfig, sfMeta SalesforceMeta) (*Schema, erro
 		}
 
 		convertObjectPermissions(&table, objMeta, objPermsMap)
-
-		for _, fldMeta := range objMeta.Fields {
-			column := Column{
-				Name:     fldMeta.FullName,
-				Type:     fldMeta.Type,
-				Nullable: !fldMeta.Required,
-				Default:  nil,
-				ExtraDef: "",
-				Labels:   make([]Label, 0),
-				Comment:  fldMeta.Label,
-			}
-
-			convertFieldPermissions(&column, objMeta, fldMeta, fldPermsMap)
-
-			if len(fldMeta.ValueSet.ValueSetDefinition.Value) > 0 {
-				if len(fldMeta.ValueSet.ValueSetName) > 0 {
-					column.Type += "(" + fldMeta.ValueSet.ValueSetName + ")"
-				}
-				for _, vsMeta := range fldMeta.ValueSet.ValueSetDefinition.Value {
-					if len(column.ExtraDef) > 0 {
-						column.ExtraDef += "; "
-					}
-					if vsMeta.Default {
-						column.ExtraDef += "[Default] "
-					}
-					if vsMeta.FullName != vsMeta.Label {
-						column.ExtraDef += "{" + vsMeta.Label + ", " + vsMeta.FullName + "}"
-					} else {
-						column.ExtraDef += vsMeta.FullName
-					}
-				}
-			}
-
-			if !config.SuppressFieldDescription && len(fldMeta.Description) > 0 {
-				column.Comment += "; " + fldMeta.Description
-			}
-
-			if fldMeta.Length != 0 {
-				column.Type = column.Type + "(" + strconv.Itoa(fldMeta.Length) + ")"
-			} else if fldMeta.Precision != 0 {
-				column.Type = column.Type + "(" + strconv.Itoa(fldMeta.Precision) + ", " + strconv.Itoa(fldMeta.Scale) + ")"
-			}
-
-			if len(fldMeta.ReferenceTo) > 0 {
-				column.Type = fldMeta.Type + "(" + fldMeta.ReferenceTo + ")"
-				column.ExtraDef = "Relation=" + fldMeta.RelationshipName + "; List=" + fldMeta.RelationshipLabel
-				if len(fldMeta.LookupFilter.FilterItems) > 0 {
-					column.ExtraDef += "; Filter="
-					for i, filterItem := range fldMeta.LookupFilter.FilterItems {
-						if i != 0 {
-							column.ExtraDef += " And "
-						}
-						column.ExtraDef += filterItem.Field + " " + filterItem.Operation + " " + filterItem.Value
-					}
-				}
-			}
-			if len(fldMeta.MaskType) > 0 {
-				column.ExtraDef = fldMeta.MaskType + ", " + fldMeta.MaskChar
-			}
-			if fldMeta.DisplayLocationInDecimal {
-				column.ExtraDef = "DisplayLocationInDecimal"
-			}
-			if len(fldMeta.DisplayFormat) > 0 {
-				column.ExtraDef = fldMeta.DisplayFormat
-			}
-			if len(fldMeta.Formula) > 0 {
-				column.Type = "Formula(" + fldMeta.Type + ", " + fldMeta.FormulaTreatBlanksAs + ")"
-				column.ExtraDef = fldMeta.Formula
-			}
-
-			if len(fldMeta.DefaultValue) > 0 {
-				column.Default = fldMeta.DefaultValue
-			}
-
-			convertRecordTypes(&column, objMeta, fldMeta)
-
-			table.Columns = append(table.Columns, column)
-
-			convertFieldConstraints(&table, objMeta, fldMeta)
-			convertRelations(&schema, &sfMeta, objMeta, fldMeta)
-		}
-
+		convertFields(config, &schema, &table, &sfMeta, objMeta, fldPermsMap)
 		convertFlows(&table, &sfMeta, objMeta)
 		convertApexTriggers(&table, &sfMeta, objMeta)
 		convertValidationRules(&table, objMeta)
@@ -205,6 +124,91 @@ func convertObjectPermissions(table *Table, objMeta *SfCustomObject, objPermsMap
 			label.Name += "-"
 		}
 		table.Labels = append(table.Labels, label)
+	}
+}
+
+func convertFields(config *CfDriverConfig, schema *Schema, table *Table,
+	sfMeta *SalesforceMeta, objMeta *SfCustomObject, fldPermsMap map[string][]permMetaAndFldPerm) {
+
+	for _, fldMeta := range objMeta.Fields {
+		column := Column{
+			Name:     fldMeta.FullName,
+			Type:     fldMeta.Type,
+			Nullable: !fldMeta.Required,
+			Default:  nil,
+			ExtraDef: "",
+			Labels:   make([]Label, 0),
+			Comment:  fldMeta.Label,
+		}
+
+		convertFieldPermissions(&column, objMeta, fldMeta, fldPermsMap)
+
+		if len(fldMeta.ValueSet.ValueSetDefinition.Value) > 0 {
+			if len(fldMeta.ValueSet.ValueSetName) > 0 {
+				column.Type += "(" + fldMeta.ValueSet.ValueSetName + ")"
+			}
+			for _, vsMeta := range fldMeta.ValueSet.ValueSetDefinition.Value {
+				if len(column.ExtraDef) > 0 {
+					column.ExtraDef += "; "
+				}
+				if vsMeta.Default {
+					column.ExtraDef += "[Default] "
+				}
+				if vsMeta.FullName != vsMeta.Label {
+					column.ExtraDef += "{" + vsMeta.Label + ", " + vsMeta.FullName + "}"
+				} else {
+					column.ExtraDef += vsMeta.FullName
+				}
+			}
+		}
+
+		if !config.SuppressFieldDescription && len(fldMeta.Description) > 0 {
+			column.Comment += "; " + fldMeta.Description
+		}
+
+		if fldMeta.Length != 0 {
+			column.Type = column.Type + "(" + strconv.Itoa(fldMeta.Length) + ")"
+		} else if fldMeta.Precision != 0 {
+			column.Type = column.Type + "(" + strconv.Itoa(fldMeta.Precision) + ", " + strconv.Itoa(fldMeta.Scale) + ")"
+		}
+
+		if len(fldMeta.ReferenceTo) > 0 {
+			column.Type = fldMeta.Type + "(" + fldMeta.ReferenceTo + ")"
+			column.ExtraDef = "Relation=" + fldMeta.RelationshipName + "; List=" + fldMeta.RelationshipLabel
+			if len(fldMeta.LookupFilter.FilterItems) > 0 {
+				column.ExtraDef += "; Filter="
+				for i, filterItem := range fldMeta.LookupFilter.FilterItems {
+					if i != 0 {
+						column.ExtraDef += " And "
+					}
+					column.ExtraDef += filterItem.Field + " " + filterItem.Operation + " " + filterItem.Value
+				}
+			}
+		}
+		if len(fldMeta.MaskType) > 0 {
+			column.ExtraDef = fldMeta.MaskType + ", " + fldMeta.MaskChar
+		}
+		if fldMeta.DisplayLocationInDecimal {
+			column.ExtraDef = "DisplayLocationInDecimal"
+		}
+		if len(fldMeta.DisplayFormat) > 0 {
+			column.ExtraDef = fldMeta.DisplayFormat
+		}
+		if len(fldMeta.Formula) > 0 {
+			column.Type = "Formula(" + fldMeta.Type + ", " + fldMeta.FormulaTreatBlanksAs + ")"
+			column.ExtraDef = fldMeta.Formula
+		}
+
+		if len(fldMeta.DefaultValue) > 0 {
+			column.Default = fldMeta.DefaultValue
+		}
+
+		convertRecordTypes(&column, objMeta, fldMeta)
+
+		table.Columns = append(table.Columns, column)
+
+		convertFieldConstraints(table, objMeta, fldMeta)
+		convertRelations(schema, sfMeta, objMeta, fldMeta)
 	}
 }
 

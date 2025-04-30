@@ -34,15 +34,15 @@ erDiagram
 "Contact" }o--|| "Account" : "Lookup
 (Contact.AccountId)
 (Account.)"
+"Foo__c" }o--|| "Bar__c" : "MasterDetail
+(Foo__c.Bar__c)
+(Bar__c.Fooes)"
 "Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account2__c)
 (Account.SecondFooes)"
 "Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account__c)
 (Account.Fooes)"
-"Foo__c" }o--|| "Bar__c" : "MasterDetail
-(Foo__c.Bar__c)
-(Bar__c.Fooes)"
 
 "Account" {
   _ AccountNumber
