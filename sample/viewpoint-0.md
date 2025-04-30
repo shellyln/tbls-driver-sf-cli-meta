@@ -12,19 +12,19 @@ Foo and bar.
 
 Custom objects
 
-| Name | Columns | Comment | Type |
-| ---- | ------- | ------- | ---- |
-| [Bar__c](Bar__c.md) | 3 | Bar | Custom object |
-| [Foo__c](Foo__c.md) | 27 | Foo | Custom object |
+| Name | Columns | Comment | Type | Labels |
+| ---- | ------- | ------- | ---- | ------ |
+| [Bar__c](Bar__c.md) | 3 | Bar | Custom object | `A_Permissions:-R--/--` `My_Permissions:-R--/--` |
+| [Foo__c](Foo__c.md) | 27 | Foo | Custom object | `A_Permissions:CRUD/VM` `My_Permissions:CRUD/VM` |
 
 ### Standard
 
 Standard objects
 
-| Name | Columns | Comment | Type |
-| ---- | ------- | ------- | ---- |
-| [Account](Account.md) | 38 |  | Standard object |
-| [Contact](Contact.md) | 34 |  | Standard object |
+| Name | Columns | Comment | Type | Labels |
+| ---- | ------- | ------- | ---- | ------ |
+| [Account](Account.md) | 38 |  | Standard object |  |
+| [Contact](Contact.md) | 34 |  | Standard object |  |
 
 ## Relations
 
@@ -35,14 +35,14 @@ erDiagram
 (Contact.AccountId)
 (Account.)"
 "Foo__c" }o--|| "Account" : "Lookup
-(Foo__c.Account2__c)
-(Account.SecondFooes)"
-"Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account__c)
 (Account.Fooes)"
 "Foo__c" }o--|| "Bar__c" : "MasterDetail
 (Foo__c.Bar__c)
 (Bar__c.Fooes)"
+"Foo__c" }o--|| "Account" : "Lookup
+(Foo__c.Account2__c)
+(Account.SecondFooes)"
 
 "Account" {
   _ AccountNumber

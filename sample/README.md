@@ -8,14 +8,14 @@
 
 ## Tables
 
-| Name | Columns | Comment | Type |
-| ---- | ------- | ------- | ---- |
-| [Account](Account.md) | 38 |  | Standard object |
-| [Bar__c](Bar__c.md) | 3 | Bar | Custom object |
-| [Contact](Contact.md) | 34 |  | Standard object |
-| [Foo__c](Foo__c.md) | 27 | Foo | Custom object |
-| [MyCustomMeta__mdt](MyCustomMeta__mdt.md) | 2 | MyCustomMeta | Custom metadata |
-| [MyCustomSetting__c](MyCustomSetting__c.md) | 2 | MyCustomSetting | Custom setting |
+| Name | Columns | Comment | Type | Labels |
+| ---- | ------- | ------- | ---- | ------ |
+| [Account](Account.md) | 38 |  | Standard object |  |
+| [Bar__c](Bar__c.md) | 3 | Bar | Custom object | `A_Permissions:-R--/--` `My_Permissions:-R--/--` |
+| [Contact](Contact.md) | 34 |  | Standard object |  |
+| [Foo__c](Foo__c.md) | 27 | Foo | Custom object | `A_Permissions:CRUD/VM` `My_Permissions:CRUD/VM` |
+| [MyCustomMeta__mdt](MyCustomMeta__mdt.md) | 2 | MyCustomMeta | Custom metadata |  |
+| [MyCustomSetting__c](MyCustomSetting__c.md) | 2 | MyCustomSetting | Custom setting |  |
 
 ## Enums
 
@@ -32,14 +32,14 @@ erDiagram
 (Contact.AccountId)
 (Account.)"
 "Foo__c" }o--|| "Account" : "Lookup
-(Foo__c.Account2__c)
-(Account.SecondFooes)"
-"Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account__c)
 (Account.Fooes)"
 "Foo__c" }o--|| "Bar__c" : "MasterDetail
 (Foo__c.Bar__c)
 (Bar__c.Fooes)"
+"Foo__c" }o--|| "Account" : "Lookup
+(Foo__c.Account2__c)
+(Account.SecondFooes)"
 
 "Account" {
   Id Id

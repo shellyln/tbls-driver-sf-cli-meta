@@ -76,11 +76,11 @@ erDiagram
 (Contact.AccountId)
 (Account.)"
 "Foo__c" }o--|| "Account" : "Lookup
-(Foo__c.Account2__c)
-(Account.SecondFooes)"
-"Foo__c" }o--|| "Account" : "Lookup
 (Foo__c.Account__c)
 (Account.Fooes)"
+"Foo__c" }o--|| "Account" : "Lookup
+(Foo__c.Account2__c)
+(Account.SecondFooes)"
 
 "Account" {
   Id Id

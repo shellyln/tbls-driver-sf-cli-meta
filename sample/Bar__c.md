@@ -6,6 +6,10 @@
 
 Bar
 
+## Labels
+
+`A_Permissions:-R--/--` `My_Permissions:-R--/--`
+
 ## Columns
 
 | Name | Type | Default | Nullable | Extra Definition | Children | Parents | Comment |
