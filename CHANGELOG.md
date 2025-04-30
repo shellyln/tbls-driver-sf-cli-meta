@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.0.9
+* Implement Sharing rule output.
+* Implement Duplication rule + Matching rule output.
+* Add config option `suppressFieldDescription`.
+* Update README.
+* Add test metadata.
+
 ## v0.0.8
 * Enable escaping of user configured special characters in markdown.
 * Enable table filtering by user configured include/exclude.
