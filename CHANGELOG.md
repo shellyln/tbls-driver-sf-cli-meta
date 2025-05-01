@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.0.10
+* Imprement object and field permissions of permission set.
+* [FIX] Fix formula type output when FormulaTreatBlanksAs is blank.
+* [FIX] Fix Criteria sharing rule output when BooleanFilter is blank.
+* Update sample doc.
+* Refactor functions.
+
 ## v0.0.9
 * Implement Sharing rule output.
 * Implement Duplication rule + Matching rule output.
