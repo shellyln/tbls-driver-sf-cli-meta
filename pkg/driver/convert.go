@@ -195,7 +195,11 @@ func convertFields(config *CfDriverConfig, schema *Schema, table *Table,
 			column.ExtraDef = fldMeta.DisplayFormat
 		}
 		if len(fldMeta.Formula) > 0 {
-			column.Type = "Formula(" + fldMeta.Type + ", " + fldMeta.FormulaTreatBlanksAs + ")"
+			if len(fldMeta.FormulaTreatBlanksAs) > 0 {
+				column.Type = "Formula(" + fldMeta.Type + ", " + fldMeta.FormulaTreatBlanksAs + ")"
+			} else {
+				column.Type = "Formula(" + fldMeta.Type + ")"
+			}
 			column.ExtraDef = fldMeta.Formula
 		}
 

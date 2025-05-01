@@ -1,7 +1,7 @@
 package driver
 
 func (s *SfSharingBaseCriteriaRule) getCriteria() string {
-	desc := "{" + s.BooleanFilter
+	desc := s.BooleanFilter
 
 	for _, v := range s.CriteriaItems {
 		if len(desc) > 0 {
@@ -10,8 +10,7 @@ func (s *SfSharingBaseCriteriaRule) getCriteria() string {
 		desc += v.Field + " " + v.Operation + " " + v.Value + v.ValueField
 	}
 
-	desc += "}"
-	return desc
+	return "{" + desc + "}"
 }
 
 func (s *SfSharingCriteriaRule) ToDescription() string {
